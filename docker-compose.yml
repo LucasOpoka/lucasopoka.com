@@ -1,0 +1,9 @@
+services:
+
+  frontend_service:
+    container_name: frontend_container
+    build: frontend
+    ports:
+       - '8042:8042'
+    volumes:
+      - ./frontend/frontend_source:/var/www/html
