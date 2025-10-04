@@ -1,0 +1,20 @@
+/* PongView specific styles */
+.pong-view {
+	/* Inherits most styles from index.css */
+}
+
+.pong-placeholder {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+	color: var(--color3);
+	font-size: 18px;
+}
+
+.pong-placeholder p {
+	margin: 10px 0;
+}
+
+
