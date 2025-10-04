@@ -8,7 +8,4 @@ export interface RouteConfig {
 export interface NavigationItem {
   path: string;
   label: string;
-  isActive: boolean;
 }
-
-// Add more type definitions as needed

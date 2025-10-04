@@ -1,52 +1,45 @@
 import { useEffect } from 'react'
-import './PongView.css'
+import { Box } from '@mui/material'
+import Header from '../components/Header'
+import SiteTitle from '../components/SiteTitle'
+import AboveTerminal from '../components/AboveTerminal'
+import Terminal from '../components/Terminal'
+import Footer from '../components/Footer'
 
-const PongView: React.FC = () => {
+function PongView() {
+
   useEffect(() => {
-    document.title = 'projects'
+    document.title = 'pong'
   }, [])
 
   return (
-    <div className="pong-view">
-      <h1 className="title">&gt; lucasopoka.com</h1>
-      <img 
-        src="https://avatars.githubusercontent.com/u/83923012?v=4" 
-        className="logo self-portrait" 
-        alt="itz a me, Lucas" 
-        width="128" 
-      />
-      <p className="content">
-        Hi there, my name is Lucas and I spend most
-        of my time speaking with computers!
-        <br />
-        <br />
-        This site is a protfolio, where I share all the
-        happy little programming accidents I got myself
-        into :V
-        <br />
-        <br />
-        Feel free to venture into the insides of my head
-        served in the form of code and don't hesitate to
-        reach out if at any point a &#128161; appears over
-        you!
-        <br />
-      </p>
+    <Box>
 
-      <div id="separator"></div>
-      <div className="terminal shadow" id="main-terminal">
-        <div className="pong-placeholder">
-          <p>Pong game will be implemented here</p>
-          <p>Coming soon...</p>
-        </div>
-      </div>
-      <pre className="footer">
-        my github: <a className="alt" href="https://github.com/lucasopoka">github.com/lucasopoka</a>
-        <code>&copy; lucas opoka {new Date().getFullYear()}</code>
-      </pre>
-    </div>
+      <Header />
+
+      <SiteTitle />
+  
+      <AboveTerminal>
+        Siencists have long determined that Pong is a game 
+        that mainly consists of bouncing a ball between two paddles.
+        <br />
+        <br />
+        Some would say it's like tango, since it requires two
+        to make the magic happen! On the other hand, its unlike tango,
+        since you don't have to move your ass.
+        <br />
+        <br />
+        Please enjoy a session of Pong below. I hope it will remind you of
+        the simplier more serene times, when this classic was
+        the pinnacle of entertainment.
+      </AboveTerminal>
+
+      <Terminal />
+      
+      <Footer />
+
+    </Box>
   )
 }
 
 export default PongView
-
-
