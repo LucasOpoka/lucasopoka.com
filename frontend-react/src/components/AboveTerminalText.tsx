@@ -8,9 +8,7 @@ interface AboveTerminalTextProps {
 function AboveTerminalText({ children }: AboveTerminalTextProps) {
   return (
     <Typography 
-      variant="body1" 
       sx={{
-        fontFamily: 'Fira Mono',
         fontSize: '0.8rem',
         lineHeight: 1.3,
         height: '100%',

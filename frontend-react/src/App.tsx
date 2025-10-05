@@ -1,19 +1,17 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import HomeView from './views/HomeView'
-import PongView from './views/PongView'
-import ContactView from './views/ContactView'
+import { BrowserRouter } from 'react-router-dom'
+import { ThemeProvider } from '@mui/material/styles'
+import { CssBaseline } from '@mui/material'
+import muiTheme from './muiTheme'
+import AppRoutes from './AppRoutes/AppRoutes'
 
 function App() {
   return (
-    <Router>
-      <div className="app">
-        <Routes>
-          <Route path="/" element={<HomeView />} />
-          <Route path="/pong" element={<PongView />} />
-          <Route path="/contact" element={<ContactView />} />
-        </Routes>
-      </div>
-    </Router>
+    <BrowserRouter>
+      <ThemeProvider theme={muiTheme}>
+        <CssBaseline />
+        <AppRoutes />
+      </ThemeProvider>
+    </BrowserRouter>
   )
 }
 

@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
-import { Box } from '@mui/material'
 import Header from '../components/Header'
 import SiteTitle from '../components/SiteTitle'
 import AboveTerminal from '../components/AboveTerminal'
 import Terminal from '../components/Terminal'
 import Footer from '../components/Footer'
+import Layout from '../components/Layout'
 
 
 function ContactView() {
@@ -14,8 +14,8 @@ function ContactView() {
   }, [])
 
   return (
-    <Box>
-
+    <Layout>
+      
       <Header />
 
       <SiteTitle />
@@ -39,8 +39,8 @@ function ContactView() {
       <Terminal />
       
       <Footer />
-
-    </Box>
+      
+    </Layout>
   )
 }
 

@@ -5,9 +5,8 @@ function SiteTitle() {
     <Typography
       component="h1"
       sx={{ 
-        fontFamily: 'Fira Mono',
         fontSize: '1.6rem',
-        color: '#87ff87',
+        color: 'secondary.main',
         fontWeight: '900',
         width: '100%',
         textAlign: 'left',

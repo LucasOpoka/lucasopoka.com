@@ -9,7 +9,7 @@ function NavigationBar() {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        height: '3rem',
+        height: '2.5rem',
         borderBottom: '1px solid #87ff8755',
         marginBottom: '1rem',
       }}
