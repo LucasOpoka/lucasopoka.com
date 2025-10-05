@@ -50,6 +50,10 @@ export interface PongGameData {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
   max_y: number;
+  introScreen: boolean;
+  targetBlinkCount: number;
+  introBlinkCount: number;
+  introBlinkTimer: number;
 }
 
 export class PongGame {
@@ -76,7 +80,11 @@ export class PongGame {
       paddleHeight: 0,
       canvas,
       context: canvas.getContext('2d')!,
-      max_y: 0
+      max_y: 0,
+      introScreen: true,
+      targetBlinkCount: 4,
+      introBlinkCount: 0,
+      introBlinkTimer: 0
     };
 
     gameData.paddleHeight = gameData.grid * 5;
@@ -98,7 +106,9 @@ export class PongGame {
   private async gameLoop(): Promise<void> {
     this.gameData.canvas.focus();
 
-    if (!this.gameData.paused) {
+    if (this.gameData.introScreen) {
+      this.handleIntroScreen();
+    } else if (!this.gameData.paused) {
       if (this.gameData.balls[0].resetting)
       {
         // reset game
@@ -133,6 +143,43 @@ export class PongGame {
     } else {
       await new Promise(r => setTimeout(r, this.gameData.delay));
       this.animationId = requestAnimationFrame(() => this.gameLoop());
+    }
+  }
+
+  private handleIntroScreen(): void {
+    this.gameData.introBlinkTimer += this.gameData.delay;
+    
+    if (this.gameData.introBlinkTimer >= 500) {
+      this.gameData.introBlinkCount++;
+      this.gameData.introBlinkTimer = 0;
+    }
+    
+    this.drawIntroScreen();
+  }
+
+  private drawIntroScreen(): void {
+    const context = this.gameData.context;
+    const canvas = this.gameData.canvas;
+
+    this.drawPongBackground();
+
+    // First blinking, then consinuous
+    if ((this.gameData.introBlinkCount < this.gameData.targetBlinkCount && this.gameData.introBlinkCount % 2 === 0) 
+      || this.gameData.introBlinkCount >= this.gameData.targetBlinkCount) {
+      context.fillStyle = '#33d17a';
+      // Check if Jersey 10 font is loaded by measuring text with a known font
+      const testFont = '75px Arial, sans-serif';
+      context.font = testFont;
+      const testWidth = context.measureText('0').width;
+      context.font = '75px "Jersey 10", Arial, sans-serif';
+      const jerseyWidth = context.measureText('0').width;
+      
+      // Only draw if Jersey 10 is loaded (different width than Arial)
+      if (jerseyWidth !== testWidth) {
+        context.fillText('ENTER', canvas.width / 2 - 70, canvas.height * 0.4);
+        context.fillText('T0', canvas.width / 2 - 20, canvas.height * 0.55);
+        context.fillText('START', canvas.width / 2 - 70, canvas.height * 0.7);
+      }
     }
   }
 
@@ -243,18 +290,7 @@ export class PongGame {
       ctx.font = '150px "Jersey 10", Arial, sans-serif';
       ctx.fillStyle = '#2aa1b3';
       
-      // Check if Jersey 10 font is loaded by measuring text with a known font
-      const testFont = '150px Arial, sans-serif';
-      ctx.font = testFont;
-      const testWidth = ctx.measureText('0').width;
-      
-      ctx.font = '150px "Jersey 10", Arial, sans-serif';
-      const jerseyWidth = ctx.measureText('0').width;
-      
-      // Only draw if Jersey 10 is loaded (different width than Arial)
-      if (Math.abs(jerseyWidth - testWidth) > 1) {
-        ctx.fillText(`${this.gameData.score[0]}     ${this.gameData.score[1]}`, canvas.width / 2, canvas.height * 0.6);
-      }
+      ctx.fillText(`${this.gameData.score[0]}     ${this.gameData.score[1]}`, canvas.width / 2, canvas.height * 0.6);
     }
   }
 
@@ -307,7 +343,11 @@ export class PongGame {
 
   private pauseListener(e: KeyboardEvent): void {
     if (e.key === 'Enter') {
-      this.gameData.paused = !this.gameData.paused;
+      if (this.gameData.introScreen) {
+        this.gameData.introScreen = false;
+      } else {
+        this.gameData.paused = !this.gameData.paused;
+      }
     }
   }
 
