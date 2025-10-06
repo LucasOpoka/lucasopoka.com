@@ -1,7 +1,0 @@
-services:
-
-  frontend_service:
-    container_name: frontend_react_container
-    build: frontend-react
-    ports:
-       - '8042:8042'

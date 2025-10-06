@@ -5,5 +5,3 @@ services:
     build: frontend
     ports:
        - '8042:8042'
-    volumes:
-      - ./frontend/frontend_source:/var/www/html

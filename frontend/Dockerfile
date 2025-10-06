@@ -1,16 +1,37 @@
-FROM alpine:3.20.3
+# Build stage
+FROM node:24-alpine as build
 
-RUN apk update && apk add nginx openssl
+WORKDIR /app
 
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+
+# Copy built assets from build stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Create SSL certificates
+RUN apk add --no-cache openssl
 RUN mkdir -p /etc/nginx/ssl
 RUN openssl req -x509 -nodes \
     -out /etc/nginx/ssl/certificate.crt \
     -keyout /etc/nginx/ssl/certificate.key \
     -subj "/C=FI/ST=UUSIMA/L=HELSINKI/O=OPOKA/OU=LUCAS/CN=ItzAMeMario"
 
-COPY nginx.conf /etc/nginx/nginx.conf
-
-RUN adduser -D -H -s /sbin/nologin -g www-data -G www-data www-data
-RUN chown www-data /var/www
+EXPOSE 8042
 
 CMD ["nginx", "-g", "daemon off;"]
