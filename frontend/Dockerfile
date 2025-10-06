@@ -21,6 +21,9 @@ FROM nginx:alpine
 # Copy built assets from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
+# Copy frontend_txt directory for curl user agents
+COPY frontend_txt /usr/share/nginx/txt
+
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
@@ -32,6 +35,8 @@ RUN openssl req -x509 -nodes \
     -keyout /etc/nginx/ssl/certificate.key \
     -subj "/C=FI/ST=UUSIMA/L=HELSINKI/O=OPOKA/OU=LUCAS/CN=ItzAMeMario"
 
-EXPOSE 8042
+EXPOSE 8000
+EXPOSE 8001
+EXPOSE 8002
 
 CMD ["nginx", "-g", "daemon off;"]
