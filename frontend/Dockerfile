@@ -3,14 +3,14 @@ FROM node:24-alpine as build
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files from frontend_react directory
+COPY frontend_react/package*.json ./
 
 # Install all dependencies (including dev dependencies for build)
 RUN npm ci
 
-# Copy source code
-COPY . .
+# Copy source code from frontend_react directory
+COPY frontend_react/ .
 
 # Build the application
 RUN npm run build
