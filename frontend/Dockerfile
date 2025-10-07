@@ -36,7 +36,5 @@ RUN openssl req -x509 -nodes \
     -subj "/C=FI/ST=UUSIMA/L=HELSINKI/O=OPOKA/OU=LUCAS/CN=ItzAMeMario"
 
 EXPOSE 8000
-EXPOSE 8001
-EXPOSE 8002
 
 CMD ["nginx", "-g", "daemon off;"]
