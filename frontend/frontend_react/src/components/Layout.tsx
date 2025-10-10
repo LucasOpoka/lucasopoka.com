@@ -15,6 +15,9 @@ function Layout({ children }: LayoutProps) {
         marginTop: '10px',
         maxWidth: '800px',
         padding: '0 6px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
       }}
     >
       {children}

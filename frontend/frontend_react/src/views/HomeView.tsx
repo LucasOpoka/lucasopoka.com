@@ -36,8 +36,8 @@ function HomeView() {
         your head!
       </AboveTerminal>
 
-      <Terminal />
-      
+      <Terminal showXterm={true} />
+
       <Footer />
       
     </Layout>

@@ -10,6 +10,7 @@ function NavigationBar() {
         justifyContent: 'space-between',
         alignItems: 'center',
         height: '2.5rem',
+        width: '100%',
         borderBottom: '1px solid #87ff8755',
         marginBottom: '1rem',
       }}

@@ -1,17 +1,19 @@
 import { Box } from "@mui/material";
 import { useEffect, useRef } from "react";
 import { PongGame } from "../PongGame";
+import XTerm from "./XTerm";
 
-const TERMINAL_WIDTH = 800;
-const TERMINAL_HEIGHT = 420;
+const TERMINAL_WIDTH = 797;
+const TERMINAL_HEIGHT = 427;
 const BORDER_WIDTH = 7.5;
 const BORDER_HEIGHT = 15;
 
 interface TerminalProps {
   showGame?: string;
+  showXterm?: boolean;
 }
 
-function Terminal({ showGame = "" }: TerminalProps) {
+function Terminal({ showGame = "", showXterm = false }: TerminalProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<PongGame | null>(null);
 
@@ -50,6 +52,9 @@ function Terminal({ showGame = "" }: TerminalProps) {
         <canvas
           ref={canvasRef}
         />
+      )}
+      {showXterm && (
+        <XTerm />
       )}
     </Box>
   )

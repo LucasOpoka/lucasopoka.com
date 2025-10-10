@@ -9,6 +9,7 @@ interface AboveTerminalProps {
 function AboveTerminal({ children }: AboveTerminalProps) {
   return (
     <Box sx={{
+      width: '100%',
       display: 'flex',
       flexDirection: 'row',
       alignItems: 'center',
