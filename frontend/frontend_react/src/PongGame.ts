@@ -9,6 +9,11 @@
 /*                                                                                                                                              */
 /* -------------------------------------------------------------------------------------------------------------------------------------------- */
 
+import muiTheme from './muiTheme';
+
+export const MAIN_COLOR = '#08CB00';
+const BACKGROUND_COLOR = '#141414';
+
 // Pong game types
 export interface PongBall {
   name: string;
@@ -166,7 +171,7 @@ export class PongGame {
     // First blinking, then consinuous
     if ((this.gameData.introBlinkCount < this.gameData.targetBlinkCount && this.gameData.introBlinkCount % 2 === 0) 
       || this.gameData.introBlinkCount >= this.gameData.targetBlinkCount) {
-      context.fillStyle = '#33d17a';
+      context.fillStyle = muiTheme.palette.secondary.main;
       // Check if Jersey 10 font is loaded by measuring text with a known font
       const testFont = '75px Arial, sans-serif';
       context.font = testFont;
@@ -194,7 +199,7 @@ export class PongGame {
       speed,
       dx: (left === 'left' ? speed : -speed),
       dy: speed,
-      color: '#2aa1b3'
+      color: muiTheme.palette.secondary.main
     };
 
     this.gameData.balls.push(ball);
@@ -210,7 +215,7 @@ export class PongGame {
       height: this.gameData.paddleHeight,
       speed,
       dy: 0,
-      color: '#33d17a'
+      color: MAIN_COLOR
     };
 
     this.addPongPlayerListeners(player, up, down);
@@ -280,7 +285,7 @@ export class PongGame {
     const canvas = this.gameData.canvas;
 
     // reset background
-    ctx.fillStyle = '#002b36';
+    ctx.fillStyle = BACKGROUND_COLOR;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -288,7 +293,7 @@ export class PongGame {
     if (this.gameData.balls[0].resetting) {
       ctx.textAlign = 'center';
       ctx.font = '150px "Jersey 10", Arial, sans-serif';
-      ctx.fillStyle = '#2aa1b3';
+      ctx.fillStyle = muiTheme.palette.secondary.main;
       
       ctx.fillText(`${this.gameData.score[0]}     ${this.gameData.score[1]}`, canvas.width / 2, canvas.height * 0.6);
     }

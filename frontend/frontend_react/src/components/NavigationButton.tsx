@@ -23,7 +23,7 @@ function NavigationButton({ label, buttonPath }: NavigationButtonProps) {
         '&:hover': {
           backgroundColor: '#333',
         },
-        color: location.pathname === buttonPath ? '#87ff87 !important' : 'inherit',
+        color: location.pathname === buttonPath ? 'secondary.main' : 'inherit',
         textDecoration: 'none'
       }}
     >

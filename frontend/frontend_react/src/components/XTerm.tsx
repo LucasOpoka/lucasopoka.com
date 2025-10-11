@@ -2,17 +2,18 @@ import { useEffect, useRef } from 'react'
 import { useXTerm } from 'react-xtermjs'
 import { Box } from '@mui/material'
 import { useAtom } from 'jotai'
-import { WebglAddon } from '@xterm/addon-webgl';
 import { WebLinksAddon } from '@xterm/addon-web-links'
 import { displayIntroMessage } from './IntroMessage'
 import { createOnDataHandler } from './XTermDataHandler'
 import { XTermThemeSetter } from './XTermThemeSetter'
+import PongOverlay from './PongOverlay'
 import {
   currentLineAtom,
   cursorPositionAtom,
   terminalActionsAtom,
   availableCommandsAtom,
-  defaultCommands
+  defaultCommands,
+  pongOverlayVisibleAtom
 } from './XTermAtoms'
 
 
@@ -27,6 +28,9 @@ function XTerm() {
   // Available commands atoms
   const [availableCommands, setAvailableCommands] = useAtom(availableCommandsAtom)
   
+  // Pong overlay state
+  const [pongOverlayVisible, setPongOverlayVisible] = useAtom(pongOverlayVisibleAtom)
+  
   // Refs to store current atom values for use in event handlers
   const currentLineRef = useRef(currentLine)
   const cursorPositionRef = useRef(cursorPosition)
@@ -34,6 +38,13 @@ function XTerm() {
   // Update refs when atoms change
   currentLineRef.current = currentLine
   cursorPositionRef.current = cursorPosition
+
+  // Function to focus the terminal
+  const focusTerminal = () => {
+    if (instance) {
+      instance.focus()
+    }
+  }
 
 
   useEffect(() => {
@@ -43,9 +54,7 @@ function XTerm() {
 
     // Create and load the addons
     const webLinksAddon = new WebLinksAddon()
-    const webglAddon = new WebglAddon()
     instance.loadAddon(webLinksAddon)
-    instance.loadAddon(webglAddon)
 
     // Set default commands
     setAvailableCommands(defaultCommands)
@@ -64,24 +73,33 @@ function XTerm() {
       setCurrentLine,
       setCursorPosition,
       terminalActions,
-      availableCommands
+      availableCommands,
+      setPongOverlayVisible
     })
 
     // Add onData listener to instance
     instance.onData(onData)
 
     // Set terminal dimensions manually (columns x rows)
-    instance.resize(106, 25)
+    instance.resize(102, 25)
 
     // Cleanup function to remove listeners
     return () => {
       webLinksAddon.dispose()
-      webglAddon.dispose()
       instance.dispose()
     }
   }, [instance])
 
-  return <Box ref={ref} sx={{ width: '100%', height: '100%'}} />
+  return (
+    <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
+      <Box ref={ref} sx={{ width: '100%', height: '100%'}} />
+      <PongOverlay 
+        isVisible={pongOverlayVisible} 
+        onClose={() => setPongOverlayVisible(false)}
+        onFocusTerminal={focusTerminal}
+      />
+    </Box>
+  )
 }
 
 export default XTerm;

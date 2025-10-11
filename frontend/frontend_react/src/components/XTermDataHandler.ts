@@ -9,6 +9,7 @@ export interface XTermDataHandlerParams {
   setCursorPosition: (position: number) => void
   terminalActions: (action: { type: string; data: string | undefined }) => void
   availableCommands: Record<string, (args: string[]) => string>
+  setPongOverlayVisible?: (visible: boolean) => void
 }
 
 export const createOnDataHandler = (params: XTermDataHandlerParams) => {
@@ -19,7 +20,8 @@ export const createOnDataHandler = (params: XTermDataHandlerParams) => {
     setCurrentLine,
     setCursorPosition,
     terminalActions,
-    availableCommands
+    availableCommands,
+    setPongOverlayVisible
   } = params
 
   const CLEAR_LINE = '\r\x1b[2K\r'
@@ -91,12 +93,16 @@ export const createOnDataHandler = (params: XTermDataHandlerParams) => {
     
     const command = currentLineRef.current.trim()
     if (!command) {
+      instance.write('\r\n')
       return true
     }
     
     if (command.toLowerCase() === 'clear') {
       instance.write(`${CLEAR_LINE}`)
       instance.clear()
+    } else if (command.toLowerCase() === 'pong' && setPongOverlayVisible) {
+      setPongOverlayVisible(true)
+      instance.write('\r\n')
     } else {
       const result = executeCommand(command, availableCommands)
       if (result) {

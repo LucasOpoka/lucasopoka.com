@@ -50,11 +50,12 @@ export const cursorPositionAtom = atom<number>(0)
  */
 export const defaultCommands = {
   'hello': () => 'Hello World!',
-  'help': () => {return `Available commands: hello, help, clear, echo, whoami, pwd, exit`},
+  'help': () => {return `Available commands: hello, help, clear, echo, whoami, pwd, pong, exit`},
   'clear': () => 'clear',
   'echo': (args: string[]) => args.join(' '),
   'whoami': () => 'lucas',
   'pwd': () => '/home/lucas',
+  'pong': () => 'pong',
   'exit': () => 'Goodbye!',
 }
 
@@ -64,6 +65,13 @@ export const defaultCommands = {
  * Initially set to the defaultCommands object.
  */
 export const availableCommandsAtom = atom<{ [key: string]: (args: string[]) => string }>(defaultCommands)
+
+// Pong overlay state atom
+
+/**
+ * When true, the pong game canvas is displayed over the terminal.
+ */
+export const pongOverlayVisibleAtom = atom<boolean>(false)
 
 
 // History state action atoms

@@ -1,35 +1,12 @@
 import { Box } from "@mui/material";
-import { useEffect, useRef } from "react";
-import { PongGame } from "../PongGame";
 import XTerm from "./XTerm";
 
-const TERMINAL_WIDTH = 797;
-const TERMINAL_HEIGHT = 427;
-const BORDER_WIDTH = 7.5;
-const BORDER_HEIGHT = 15;
+export const TERMINAL_WIDTH = 797;
+export const TERMINAL_HEIGHT = 427;
+export const BORDER_WIDTH = 7.5;
+export const BORDER_HEIGHT = 15;
 
-interface TerminalProps {
-  showGame?: string;
-  showXterm?: boolean;
-}
-
-function Terminal({ showGame = "", showXterm = false }: TerminalProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const gameRef = useRef<PongGame | null>(null);
-
-  useEffect(() => {
-    if (showGame === "pong" && canvasRef.current) {
-      const canvas = canvasRef.current;
-      // Account for the custom borders
-      canvas.width = TERMINAL_WIDTH - 2 * BORDER_WIDTH;
-      canvas.height = TERMINAL_HEIGHT - 2 * BORDER_HEIGHT;
-      
-      // Create and start the game
-      gameRef.current = new PongGame(canvas);
-      gameRef.current.startGame();
-    }
-  }, [showGame]);
-
+function Terminal() {
   return (
     <Box
       sx={{
@@ -38,24 +15,9 @@ function Terminal({ showGame = "", showXterm = false }: TerminalProps) {
 	      width: `${TERMINAL_WIDTH}px`,
         border: '1px solid #87ff8755',
         boxShadow: '0 0 200px #87ff8734',
-        ...(showGame && {
-          outlineOffset: '-7.5px',
-	        outline: '3px solid #33d17a',
-	        borderLeft: `${BORDER_WIDTH}px solid #33d17a`,
-	        borderRight: `${BORDER_WIDTH}px solid #33d17a`,
-	        borderTop: `${BORDER_HEIGHT}px solid #33d17a`,
-	        borderBottom: `${BORDER_HEIGHT}px solid #33d17a`,
-        }),
       }}
     >
-      {showGame && (
-        <canvas
-          ref={canvasRef}
-        />
-      )}
-      {showXterm && (
-        <XTerm />
-      )}
+      <XTerm />
     </Box>
   )
 }
