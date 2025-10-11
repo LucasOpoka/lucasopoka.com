@@ -1,6 +1,6 @@
 import { Terminal } from '@xterm/xterm'
 
-export function XTermThemeSetter(instance: Terminal): void {
+export function TerminalThemeSetter(instance: Terminal): void {
   // Configure terminal theme
   instance.options.theme = {
     background: '#000000',

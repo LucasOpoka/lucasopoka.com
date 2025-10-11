@@ -1,7 +1,7 @@
 import { Terminal } from '@xterm/xterm'
-import { executeCommand } from './XTermCommandExecute'
+import { executeCommand } from './TerminalCommandExecute'
 
-export interface XTermDataHandlerParams {
+export interface DataHandlerParams {
   instance: Terminal
   currentLineRef: React.RefObject<string>
   cursorPositionRef: React.RefObject<number>
@@ -12,7 +12,7 @@ export interface XTermDataHandlerParams {
   setPongOverlayVisible?: (visible: boolean) => void
 }
 
-export const createOnDataHandler = (params: XTermDataHandlerParams) => {
+export const createOnDataHandler = (params: DataHandlerParams) => {
   const {
     instance,
     currentLineRef,
