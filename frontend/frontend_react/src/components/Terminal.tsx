@@ -4,8 +4,8 @@ import { Box } from '@mui/material'
 import { useAtom } from 'jotai'
 import { WebLinksAddon } from '@xterm/addon-web-links'
 import { displayIntroMessage } from './IntroMessage'
-import { createOnDataHandler } from './TerminalDataHandler'
-import { TerminalThemeSetter } from './TerminalThemeSetter'
+import { createOnDataHandler } from '../terminal/TerminalDataHandler'
+import { TerminalThemeSetter } from '../terminal/TerminalThemeSetter'
 import PongOverlay from './PongOverlay'
 import {
   currentLineAtom,
@@ -14,7 +14,7 @@ import {
   availableCommandsAtom,
   defaultCommands,
   pongOverlayVisibleAtom
-} from './TerminalAtoms'
+} from '../terminal/TerminalAtoms'
 
 export const TERMINAL_WIDTH = 797;
 export const TERMINAL_HEIGHT = 427;

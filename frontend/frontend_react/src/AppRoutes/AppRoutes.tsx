@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useAtom } from 'jotai'
-import { pongOverlayVisibleAtom } from '../components/TerminalAtoms'
+import { pongOverlayVisibleAtom } from '../terminal/TerminalAtoms'
 import HomeView from '../views/HomeView'
 import PongView from '../views/PongView'
 import ContactView from '../views/ContactView'
