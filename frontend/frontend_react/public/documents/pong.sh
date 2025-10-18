@@ -1,0 +1,388 @@
+#!/bin/bash
+
+# -------------------------------------------------- Variables section --------------------------------------------------
+
+# Define pixel as 2 spaces
+pixel="  "
+
+# Get pong grid size, row height is 1 char and col width is 2 chars
+declare -i grid_rows=$(($(tput lines)-5))
+declare -i grid_cols=$((($(tput cols)-2)/2))
+
+# Wheter game is running
+declare -i game_running=0
+
+# General paddle variables
+declare -i paddle_height=10
+declare -i paddle_width=1
+declare -i paddle_speed=3
+declare -i paddle_start_row=$(($grid_rows/2 - $paddle_height/2))
+
+# Left paddle variables
+declare -i left_paddle_row=$paddle_start_row
+declare -i new_left_paddle_row=$left_paddle_row
+declare -i left_paddle_col=0
+
+# Right paddle variables
+declare -i right_paddle_row=$paddle_start_row
+declare -i new_right_paddle_row=$right_paddle_row
+declare -i right_paddle_col=$(($grid_cols - 1))
+
+# Ball variables
+declare -i  ball_height=1
+declare -i  ball_width=1
+declare -i  ball_start_row=$(($grid_rows/2 - 2))
+declare -i  ball_start_col=$(($grid_cols/2))
+declare -i  ball_row=$ball_start_row
+declare -i  ball_col=$ball_start_col
+declare -i  ball_speed_row=-1
+declare -i  ball_speed_col=1
+
+# Score variables
+declare -i left_points=0
+declare -i right_points=0
+
+# Internal field separator, how bash splits strings
+IFS=''
+
+# Colors variables
+ball_color="\e[46m"
+border_color="\e[102m"
+no_color="\e[0m"
+
+# Signals
+SIG_LEFT_UP=USR1
+SIG_LEFT_DOWN=USR2
+SIG_RIGHT_UP=URG
+SIG_RIGHT_DOWN=IO
+SIG_QUIT=WINCH
+SIG_END=HUP
+
+
+# -------------------------------------------------- Functions section --------------------------------------------------
+init_grid()
+{
+    clear
+    printf "\e[?25l"
+    stty -echo
+    for ((i=0; i<grid_rows; i++)); do
+        for ((j=0; j<grid_cols; j++)); do
+            eval "arr$i[$j]=\"$pixel\""
+        done
+    done
+}
+
+
+clear_grid()
+{
+    for ((i=0; i<grid_rows; i++)); do
+        for ((j=0; j<grid_cols; j++)); do
+            eval "arr$i[$j]=\"$no_color$pixel$no_color\""
+        done
+    done
+}
+
+
+reset_positions()
+{
+    next_ball_row=$ball_start_row
+    next_ball_col=$ball_start_col
+
+    new_left_paddle_row=$paddle_start_row
+    new_right_paddle_row=$paddle_start_row
+}
+
+
+move_and_draw()
+{
+    printf "\e[${1};${2}H$3"
+}
+
+# args: $1-row $2-col $3-height $4-width $5-color
+draw_rectangle()
+{
+    for ((i=0; i<$3; i++)); do
+        for ((j=0; j<$4; j++)); do
+            eval "arr$(($1+$i))[$(($2+$j))]=\"$5$pixel$no_color\""
+        done
+    done
+}
+
+
+# args: $1-row $2-col $3-color
+draw_paddle()
+{
+    draw_rectangle "$1" "$2" "$paddle_height" "$paddle_width" "$3"
+}
+
+
+# args: $1-row $2-col $3-color
+draw_ball()
+{
+    draw_rectangle "$1" "$2" "$ball_height" "$ball_width" "$3"
+}
+
+
+detect_ball_x_paddle_colision()
+{
+    local position;
+
+    eval "pos=\${arr$(($1))[$(($2))]}"
+    if [ "$pos" == "$border_color$pixel$no_color" ]; then
+        return 0
+    fi
+
+    return 1
+}
+
+
+draw_grid()
+{
+    # Top row
+    move_and_draw 1 1 "$border_color+$no_color"
+    for ((i=1; i<=grid_cols; i++)); do
+        move_and_draw 1 $(($i*2)) "$border_color--$no_color"
+    done
+    move_and_draw 1 $((grid_cols*2 + 2)) "$border_color+$no_color"
+
+    # Middle rows
+    for ((i=0; i<grid_rows; i++)); do
+        move_and_draw $((i+2)) 1 "$border_color|$no_color"
+        eval printf "\"\${arr$i[*]}\""
+        printf "$border_color|$no_color"
+    done
+
+    # Bottom row
+    move_and_draw $((grid_rows+2)) 1 "$border_color+$no_color"
+    for ((i=1; i<=grid_cols; i++)); do
+        move_and_draw $((grid_rows+2)) $(($i*2)) "$border_color--$no_color"
+    done
+    move_and_draw $((grid_rows+2)) $((grid_cols*2 + 2)) "$border_color+$no_color"
+}
+
+
+move_left_paddle()
+{
+    if [ $(($1 + $2)) -ge 0 ] && [ $(($1 + $2 + $paddle_height)) -le $grid_rows ]; then
+        new_left_paddle_row=$(($1 + $2))
+    elif [ $2 -lt 0 ]; then
+        new_left_paddle_row=0
+    else
+        new_left_paddle_row=$(($grid_rows - $paddle_height))
+    fi
+}
+
+
+move_right_paddle()
+{
+    if [ $(($1 + $2)) -ge 0 ] && [ $(($1 + $2 + $paddle_height)) -le $grid_rows ]; then
+        new_right_paddle_row=$(($1 + $2))
+    elif [ $2 -lt 0 ]; then
+        new_right_paddle_row=0
+    else
+        new_right_paddle_row=$(($grid_rows - $paddle_height))
+    fi
+}
+
+
+move_paddles()
+{
+    # Left paddle
+    draw_paddle "$left_paddle_row" "$left_paddle_col" "$no_color"
+    left_paddle_row=$new_left_paddle_row
+    draw_paddle "$left_paddle_row" "$left_paddle_col" "$border_color"
+
+    # Right paddle
+    draw_paddle "$right_paddle_row" "$right_paddle_col" "$no_color"
+    right_paddle_row=$new_right_paddle_row
+    draw_paddle "$right_paddle_row" "$right_paddle_col" "$border_color"
+}
+
+
+move_ball()
+{
+    local next_ball_row=$(($ball_row + $ball_speed_row))
+    local next_ball_col=$(($ball_col + $ball_speed_col))
+
+    # Check bounce from top or bottom
+    if [ $next_ball_row -lt 0 ] || [ $next_ball_row -ge "$grid_rows" ]; then
+        ball_speed_row=$(($ball_speed_row*-1))
+        next_ball_row=$(($ball_row + $ball_speed_row))
+    fi
+
+    # Check if ball went out of bounds or bounced of the paddles
+    if [ $next_ball_col -lt 0 ] || [ $next_ball_col -ge "$grid_cols" ]; then
+        if [ $next_ball_col -lt 0 ]; then
+            right_points=$(($right_points+1))
+        else
+            left_points=$(($left_points+1))
+        fi
+
+        if [ $left_points -lt 5 ] && [ $right_points -lt 5 ]; then
+            display_score "$left_points" "$right_points"
+            reset_positions
+            sleep 0.75
+            clear_grid
+        else
+            game_running=0
+            display_score "$left_points" "$right_points"
+        fi
+    elif $(detect_ball_x_paddle_colision $next_ball_row $next_ball_col); then
+        ball_speed_col=$(($ball_speed_col*-1))
+        next_ball_col=$(($ball_col + $ball_speed_col))
+    fi
+
+    # If bounced, clear old position, move and redraw
+    if [ $game_running -eq 1 ]; then
+        draw_ball "$ball_row" "$ball_col" "$no_color"
+        ball_row=$next_ball_row
+        ball_col=$next_ball_col
+        draw_ball "$ball_row" "$ball_col" "$ball_color"
+    fi
+}
+
+
+get_user_input()
+{
+    trap "" SIGINT SIGQUIT
+    trap "return;" $SIG_END
+
+    while true;
+    do
+        read -rsn1 input # get 1 char
+
+        case $input in
+            'q')    kill -$SIG_QUIT $game_pid
+                    return
+                    ;;
+            'w')    kill -$SIG_LEFT_UP $game_pid    # w
+                    ;;
+            's')    kill -$SIG_LEFT_DOWN $game_pid  # s
+                    ;;
+            'o')    kill -$SIG_RIGHT_UP $game_pid   # o
+                    ;;
+            'l')    kill -$SIG_RIGHT_DOWN $game_pid # l
+                    ;; 
+        esac
+    done
+}
+
+draw_start_message()
+{
+    local mid_row=$(($grid_rows / 2))
+    local mid_col=$(($grid_cols / 2))
+    declare -i str_col
+
+    eval "str_arr0=(-11 -10 -9 -8 -6 -3 -1 0 1 3 4 5 6 8 9 10);  str_arr6=(-3 -2 -1 2 3);   str_arr12=(-8 -9 -10 -6 -5 -4 -1 0 3 4 5 8 9 10)"
+    eval "str_arr1=(-11 -6 -5 -3 0 3 8 11);                      str_arr7=(-2 1 4);         str_arr13=(-11 -5 -2 1 3 6 9)"
+    eval "str_arr2=(-11 -10 -9 -6 -4 -3 0 3 4 5 8 9 10);         str_arr8=(-2 1 4);         str_arr14=(-9 -10 -5 -2 -1 0 1 3 4 5 9)"
+    eval "str_arr3=(-11 -6 -3 0 3 8 11);                         str_arr9=(-2 1 4);         str_arr15=(-8 -5 -2 1 3 6 9)"
+    eval "str_arr4=(-11 -10 -9 -8 -6 -3 0 3 4 5 6 8 11);         str_arr10=(-2 2 3);        str_arr16=(-9 -10 -11 -5 -2 1 3 6 9)"
+
+    for ((i=0; i<=16; i++)); do
+        eval "sub_arr_len=\${#str_arr$i[@]}"
+        for ((j=0; j<sub_arr_len; j++)); do
+            eval "str_col=\$((str_arr$i[$j]))";
+            eval "arr$(($mid_row+$i-8))[$(($mid_col+$str_col))]=\"\$1\$pixel\$no_color\"";
+        done
+    done
+    
+    draw_grid
+}
+
+draw_number()
+{
+    eval "number0_arr1=(2 3);  number1_arr1=(2);        number2_arr1=(2 3);      number3_arr1=(2 3);  number4_arr1=(2 3);      number5_arr1=(1 2 3 4)"
+    eval "number0_arr2=(1 4);  number1_arr2=(1 2);      number2_arr2=(1 4);      number3_arr2=(1 4);  number4_arr2=(1 3);      number5_arr2=(1)"
+    eval "number0_arr3=(1 4);  number1_arr3=(2);        number2_arr3=(3);        number3_arr3=(3);    number4_arr3=(1 2 3 4);  number5_arr3=(1 2 3)"
+    eval "number0_arr4=(1 4);  number1_arr4=(2);        number2_arr4=(2);        number3_arr4=(1 4);  number4_arr4=(3);        number5_arr4=(4)"
+    eval "number0_arr5=(2 3);  number1_arr5=(1 2 3);    number2_arr5=(1 2 3 4);  number3_arr5=(2 3);  number4_arr5=(3);        number5_arr5=(1 2 3)"
+
+    for ((i=1; i<=5; i++)); do
+        eval "sub_arr_len=\${#number$1_arr$i[@]}"
+        for ((j=0; j<sub_arr_len; j++)); do
+            eval "num_col=\$((number$1_arr$i[$j]))";
+            eval "arr$(($2+$i))[$(($3+$num_col))]=\"\$4\$pixel\$no_color\"";
+        done
+    done
+}
+
+display_score()
+{
+    clear_grid
+    draw_number "$1" "$(($ball_start_row-2))" "$(($ball_start_col/2+2))" "$ball_color"
+    draw_number "$2" "$(($ball_start_row-2))" "$(($ball_start_col*3/2+2))" "$ball_color"
+    draw_grid
+}
+
+start_screen_loop()
+{
+    local message_color
+    declare -i counter=0
+
+    while [ $counter -le 4 ];
+    do
+        if (( $counter % 2 == 0 )); then
+            message_color=$border_color
+        else
+            message_color=$no_color
+        fi
+
+        counter=$(($counter+1))
+        draw_start_message "$message_color"
+        sleep 0.45
+    done
+    
+
+    while true;
+    do
+        read -rsn1 input # get 1 char
+        if [[ $input = "" ]]; then 
+            break
+        fi
+    done
+
+    draw_start_message "$no_color"
+    game_running=1
+    sleep 0.5
+}
+
+game_loop()
+{
+    trap "move_left_paddle   \$left_paddle_row  -\$paddle_speed"    $SIG_LEFT_UP
+    trap "move_left_paddle   \$left_paddle_row  \$paddle_speed"     $SIG_LEFT_DOWN
+    trap "move_right_paddle  \$right_paddle_row -\$paddle_speed"    $SIG_RIGHT_UP
+    trap "move_right_paddle  \$right_paddle_row \$paddle_speed"     $SIG_RIGHT_DOWN
+    trap "exit 1;"                                                  $SIG_QUIT
+
+    while [ $game_running -eq 1 ];
+    do
+        move_paddles
+        move_ball
+        draw_grid
+        sleep 0.05
+    done
+
+    # Signal to kill the input loop
+    kill -$SIG_END $$
+}
+
+
+clear_game()
+{
+    stty echo
+    printf "\e[?25h"
+}
+
+
+# -------------------------------------------------- Main section --------------------------------------------------
+
+init_grid
+draw_grid
+
+start_screen_loop
+game_loop & game_pid=$!
+get_user_input
+
+clear_game
+exit 0

@@ -3,7 +3,7 @@ import { useXTerm } from 'react-xtermjs'
 import { Box } from '@mui/material'
 import { useAtom } from 'jotai'
 import { WebLinksAddon } from '@xterm/addon-web-links'
-import { displayIntroMessage } from './IntroMessage'
+import { displayViewIntroMessage } from './IntroMessage'
 import { createOnDataHandler } from '../terminal/TerminalDataHandler'
 import { TerminalThemeSetter } from '../terminal/TerminalThemeSetter'
 import PongOverlay from './PongOverlay'
@@ -11,9 +11,9 @@ import {
   currentLineAtom,
   cursorPositionAtom,
   terminalActionsAtom,
-  availableCommandsAtom,
-  defaultCommands,
-  pongOverlayVisibleAtom
+  pongOverlayVisibleAtom,
+  terminalInstanceAtom,
+  isTypingAtom
 } from '../terminal/TerminalAtoms'
 
 export const TERMINAL_WIDTH = 797;
@@ -21,27 +21,36 @@ export const TERMINAL_HEIGHT = 427;
 export const BORDER_WIDTH = 7.5;
 export const BORDER_HEIGHT = 15;
 
-function Terminal() {
+interface TerminalProps {
+  viewType?: 'home' | 'pong' | 'contact';
+}
+
+function Terminal({ viewType }: TerminalProps) {
   const { instance, ref } = useXTerm()
   
   // History state atoms
   const [currentLine, setCurrentLine] = useAtom(currentLineAtom)
   const [cursorPosition, setCursorPosition] = useAtom(cursorPositionAtom)
   const [, terminalActions] = useAtom(terminalActionsAtom)
-  
-  // Available commands atoms
-  const [availableCommands, setAvailableCommands] = useAtom(availableCommandsAtom)
-  
+
   // Pong overlay state
   const [pongOverlayVisible, setPongOverlayVisible] = useAtom(pongOverlayVisibleAtom)
+  
+  // Terminal instance atom
+  const [, setTerminalInstance] = useAtom(terminalInstanceAtom)
+  
+  // Typing state atom
+  const [isTyping, setIsTyping] = useAtom(isTypingAtom)
   
   // Refs to store current atom values for use in event handlers
   const currentLineRef = useRef(currentLine)
   const cursorPositionRef = useRef(cursorPosition)
+  const isTypingRef = useRef(isTyping)
   
   // Update refs when atoms change
   currentLineRef.current = currentLine
   cursorPositionRef.current = cursorPosition
+  isTypingRef.current = isTyping
 
   // Function to focus the terminal
   const focusTerminal = () => {
@@ -55,18 +64,27 @@ function Terminal() {
       return
     }
 
+    // Store terminal instance in atom for use by other components
+    setTerminalInstance(instance)
+
     // Create and load the addons
     const webLinksAddon = new WebLinksAddon()
     instance.loadAddon(webLinksAddon)
 
-    // Set default commands
-    setAvailableCommands(defaultCommands)
-
     // Configure terminal theme
     TerminalThemeSetter(instance)
 
-    // Display intro message
-    displayIntroMessage(instance)
+    // Display intro message - use view-specific if viewType is provided
+    if (viewType) {
+      displayViewIntroMessage(
+        instance,
+        viewType,
+        setCurrentLine,
+        setCursorPosition,
+        setIsTyping,
+        terminalActions
+      )
+    }
 
     // Create the on data handler
     const onData = createOnDataHandler({
@@ -76,8 +94,8 @@ function Terminal() {
       setCurrentLine,
       setCursorPosition,
       terminalActions,
-      availableCommands,
-      setPongOverlayVisible
+      setPongOverlayVisible,
+      isTypingRef
     })
 
     // Add onData listener to instance

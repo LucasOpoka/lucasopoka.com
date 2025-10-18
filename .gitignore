@@ -8,6 +8,9 @@ yarn-error.log*
 dist/
 build/
 
+# Disk images
+frontend/frontend_react/public/disk-images/
+
 # Environment variables
 .env
 .env.local

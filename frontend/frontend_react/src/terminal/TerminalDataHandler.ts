@@ -1,5 +1,5 @@
 import { Terminal } from '@xterm/xterm'
-import { executeCommand } from './TerminalCommandExecute'
+import { getCommandHandler } from './TerminalCommandHandlers'
 
 export interface DataHandlerParams {
   instance: Terminal
@@ -8,8 +8,8 @@ export interface DataHandlerParams {
   setCurrentLine: (line: string) => void
   setCursorPosition: (position: number) => void
   terminalActions: (action: { type: string; data: string | undefined }) => void
-  availableCommands: Record<string, (args: string[]) => string>
   setPongOverlayVisible?: (visible: boolean) => void
+  isTypingRef: React.RefObject<boolean>
 }
 
 export const createOnDataHandler = (params: DataHandlerParams) => {
@@ -20,11 +20,12 @@ export const createOnDataHandler = (params: DataHandlerParams) => {
     setCurrentLine,
     setCursorPosition,
     terminalActions,
-    availableCommands,
-    setPongOverlayVisible
+    setPongOverlayVisible,
+    isTypingRef
   } = params
 
   const CLEAR_LINE = '\r\x1b[2K\r'
+  const PROMPT = '$ '
 
 
   // Helper function to position cursor correctly
@@ -48,8 +49,8 @@ export const createOnDataHandler = (params: DataHandlerParams) => {
 
   // Helper function to redraw line and position cursor
   const redrawLineWithCursor = (line: string, cursorPos: number) => {
-    instance.write(`${CLEAR_LINE}${line}`)
-    positionCursor(line, cursorPos)
+    instance.write(`${CLEAR_LINE}${PROMPT}${line}`)
+    positionCursor(`${PROMPT}${line}`, cursorPos + PROMPT.length)
   }
 
 
@@ -86,7 +87,7 @@ export const createOnDataHandler = (params: DataHandlerParams) => {
 
 
   // Helper function to execute commands
-  const handleEnter = (data: string) => {
+  const handleEnter = async (data: string) => {
     if (data !== '\r' && data !== '\n') {
       return false
     }
@@ -94,20 +95,30 @@ export const createOnDataHandler = (params: DataHandlerParams) => {
     const command = currentLineRef.current.trim()
     if (!command) {
       instance.write('\r\n')
+      instance.write(PROMPT)
       return true
     }
     
     if (command.toLowerCase() === 'clear') {
       instance.write(`${CLEAR_LINE}`)
       instance.clear()
-    } else if (command.toLowerCase() === 'pong' && setPongOverlayVisible) {
-      setPongOverlayVisible(true)
-      instance.write('\r\n')
+      instance.write(PROMPT)
     } else {
-      const result = executeCommand(command, availableCommands)
-      if (result) {
-        instance.write('\r\n' + result + '\r\n')
-      }
+      // Parse command and arguments
+      const parts = command.trim().split(/\s+/)
+      const cmd = parts[0].toLowerCase()
+      const args = parts.slice(1)
+      
+      // Get the appropriate handler (includes unknown command handling)
+      const handler = getCommandHandler(cmd)
+      await handler({
+        instance,
+        args,
+        setPongOverlayVisible,
+        setCurrentLine,
+        setCursorPosition
+      })
+      instance.write(PROMPT)
     }
     terminalActions({ type: 'addToHistory', data: command })
     terminalActions({ type: 'resetAfterExecution', data: undefined })
@@ -171,8 +182,14 @@ export const createOnDataHandler = (params: DataHandlerParams) => {
     return true
   }
 
-  return (data: string) => {
+  return async (data: string) => {
     console.log(`Received data: ${data} (length: ${data.length})`)
+
+    // Block user input when typing is in progress
+    if (isTypingRef.current) {
+      console.log('Input blocked: typing in progress')
+      return
+    }
 
     // Handle arrow keys
     if (handleArrowKey(data)) {
@@ -180,7 +197,7 @@ export const createOnDataHandler = (params: DataHandlerParams) => {
     }
       
     // Handle enter key
-    if (handleEnter(data)) {
+    if (await handleEnter(data)) {
       return
     }
     

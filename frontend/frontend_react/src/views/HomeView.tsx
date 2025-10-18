@@ -2,8 +2,6 @@ import { useEffect } from 'react'
 import Header from '../components/Header'
 import SiteTitle from '../components/SiteTitle'
 import AboveTerminal from '../components/AboveTerminal'
-import Terminal from '../components/Terminal'
-import Footer from '../components/Footer'
 import Layout from '../components/Layout'
 
 
@@ -35,10 +33,6 @@ function HomeView() {
         reach out if any of my work makes a 💡 appear over
         your head!
       </AboveTerminal>
-
-      <Terminal showXterm={true} />
-
-      <Footer />
       
     </Layout>
   )

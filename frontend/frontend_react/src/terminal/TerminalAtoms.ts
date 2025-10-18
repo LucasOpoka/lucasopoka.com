@@ -42,36 +42,17 @@ export const historyIndexAtom = atom<number>(-1)
  */
 export const cursorPositionAtom = atom<number>(0)
 
-// Default commands definition
-
 /**
- * Default set of commands available in the terminal.
- * Each command is a function that takes an array of arguments and returns a string response.
- */
-export const defaultCommands = {
-  'hello': () => 'Hello World!',
-  'help': () => {return `Available commands: hello, help, clear, echo, whoami, pwd, pong, exit`},
-  'clear': () => 'clear',
-  'echo': (args: string[]) => args.join(' '),
-  'whoami': () => 'lucas',
-  'pwd': () => '/home/lucas',
-  'pong': () => 'pong',
-  'exit': () => 'Goodbye!',
-}
-
-/**
- * Atom that stores the available commands for the terminal.
- * This is a writable atom that can be updated to add or modify commands.
- * Initially set to the defaultCommands object.
- */
-export const availableCommandsAtom = atom<{ [key: string]: (args: string[]) => string }>(defaultCommands)
-
-// Pong overlay state atom
-
-/**
+ * Pong overlay state atom
  * When true, the pong game canvas is displayed over the terminal.
  */
 export const pongOverlayVisibleAtom = atom<boolean>(false)
+
+/**
+ * Programmatic typing state atom
+ * When true, the terminal is currently typing (prevents user input).
+ */
+export const isTypingAtom = atom<boolean>(false)
 
 
 // History state action atoms

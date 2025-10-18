@@ -2,8 +2,6 @@ import { useEffect } from 'react'
 import Header from '../components/Header'
 import SiteTitle from '../components/SiteTitle'
 import AboveTerminal from '../components/AboveTerminal'
-import Terminal from '../components/Terminal'
-import Footer from '../components/Footer'
 import Layout from '../components/Layout'
 
 
@@ -21,24 +19,15 @@ function ContactView() {
       <SiteTitle />
   
       <AboveTerminal>
-        Hi there, my name is Lucas and I spend most
-        of my time speaking with computers!
+        Can this really be a Linux running in your browser? <br />
+        The answer is yes, yes it can! <br />
+        <br />
+        Use it as any other Linux, create directories, edit files, run programs, etc.
         <br />
         <br />
-        This site is a protfolio, where I share all the
-        happy little programming accidents I got myself
-        into :V
-        <br />
-        <br />
-        Feel free to venture into the insides of my mind
-        served in the form of code and don't hesitate to
-        reach out if any of my work makes a 💡 appear over
-        your head!
+        Check the CPU and disk monitoring in under the terminal. <br />
+        Your data persists between sessions using IndexedDB.
       </AboveTerminal>
-
-      <Terminal />
-      
-      <Footer />
       
     </Layout>
   )

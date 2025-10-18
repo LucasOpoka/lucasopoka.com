@@ -2,8 +2,6 @@ import { useEffect } from 'react'
 import Header from '../components/Header'
 import SiteTitle from '../components/SiteTitle'
 import AboveTerminal from '../components/AboveTerminal'
-import Terminal from '../components/Terminal'
-import Footer from '../components/Footer'
 import Layout from '../components/Layout'
 
 function PongView() {
@@ -33,10 +31,7 @@ function PongView() {
         the simplier more serene times, when this classic was
         the pinnacle of entertainment.
       </AboveTerminal>
-
-      <Terminal showGame="pong" />
       
-      <Footer />
     </Layout>
   )
 }
