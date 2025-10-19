@@ -85,7 +85,7 @@ export async function handleHello({ instance }: CommandHandlerParams): Promise<v
  * Handles the help command
  */
 export async function handleHelp({ instance }: CommandHandlerParams): Promise<void> {
-  await typeResult(instance, 'Available commands: hello, help, clear, echo, whoami, pwd, pong, curl, exit')
+  await typeResult(instance, 'Available commands: hello, help, clear, echo, whoami, pwd, cd, cat, pong, curl, exit')
 }
 
 /**
@@ -108,6 +108,28 @@ export async function handleWhoami({ instance }: CommandHandlerParams): Promise<
  */
 export async function handlePwd({ instance }: CommandHandlerParams): Promise<void> {
   await typeResult(instance, '/home/lucas')
+}
+
+/**
+ * Handles the cd command
+ */
+export async function handleCd({ instance, args = [] }: CommandHandlerParams): Promise<void> {
+  const targetDir = args[0] || '/home/user';
+  await typeResult(instance, `Changed directory to ${targetDir}`)
+}
+
+/**
+ * Handles the cat command
+ */
+export async function handleCat({ instance, args = [] }: CommandHandlerParams): Promise<void> {
+  const filename = args[0];
+  if (!filename) {
+    await typeResult(instance, 'cat: missing file operand')
+    return;
+  }
+  
+  // For now, just acknowledge the command - the actual file reading will be handled by the VM
+  await typeResult(instance, `Displaying contents of ${filename}`)
 }
 
 /**
@@ -175,6 +197,8 @@ export const commandHandlers: Record<string, (params: CommandHandlerParams) => P
   'echo': handleEcho,
   'whoami': handleWhoami,
   'pwd': handlePwd,
+  'cd': handleCd,
+  'cat': handleCat,
   'pong': handlePong,
   'curl': handleCurl,
   'exit': handleExit,

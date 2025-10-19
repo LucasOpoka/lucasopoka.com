@@ -4,10 +4,6 @@ export const configObj = {
   diskImageUrl: "/disk-images/debian_mini_20230519_5022088024.ext2",
   // The root filesystem backend type
   diskImageType: "bytes",
-  // Print an introduction message about the technology
-  printIntro: true,
-  // Is a graphical display needed
-  needsDisplay: false,
   // Executable full path (Required)
   cmd: "/bin/bash",
   // Arguments, as an array (Required)

@@ -1,25 +1,23 @@
 import { useEffect, useRef } from 'react';
 import { useAtom } from 'jotai';
 import { useXTerm } from 'react-xtermjs';
-import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { Box } from '@mui/material';
 import '@xterm/xterm/css/xterm.css';
-import { TerminalThemeSetter } from '../../terminal/TerminalThemeSetter';
+import { TerminalThemeSetter } from '../TerminalThemeSetter';
 import { 
   cpuActivityAtom, 
   diskActivityAtom, 
   cpuPercentageAtom, 
   diskLatencyAtom,
-  fitAddonAtom,
   blockCacheAtom,
   cpuActivityEventsAtom,
   diskLatenciesAtom,
   activityEventsIntervalAtom
 } from '../WebVmAtoms';
-import { introMessage, errorMessage, unexpectedErrorMessage } from '../lib/messages';
 import { configObj } from '../config';
 import WebVmFooter from './WebVmFooter';
+import { useViewNavigation } from '../hooks/useViewNavigation';
 import type { WebVMProps, ActivityEvent, CpuActivityCallback, DiskActivityCallback, DiskLatencyCallback } from '../../types/webvm';
 import React from 'react';  
 import type { CloudDevice, HttpBytesDevice, GitHubDevice, MountPointConfiguration } from '@leaningtech/cheerpx';
@@ -37,7 +35,6 @@ export default function WebVM({ cacheId, cpuActivityEvents = [], diskLatencies =
   const [, setDiskLatency] = useAtom(diskLatencyAtom);
   
   // WebVM component atoms
-  const [, setFitAddon] = useAtom(fitAddonAtom);
   const [blockCache, setBlockCache] = useAtom(blockCacheAtom);
   const [cpuActivityEventsState, setCpuActivityEventsState] = useAtom(cpuActivityEventsAtom);
   const [, setDiskLatenciesState] = useAtom(diskLatenciesAtom);
@@ -51,6 +48,9 @@ export default function WebVM({ cacheId, cpuActivityEvents = [], diskLatencies =
 
   const activityEventsIntervalRef = useRef(activityEventsInterval);
   activityEventsIntervalRef.current = activityEventsInterval;
+
+  // Use the view navigation hook - only when CheerpX is ready
+  useViewNavigation(term, cxReadFuncRef);
   
 
   // Initialize atoms with props
@@ -195,37 +195,29 @@ export default function WebVM({ cacheId, cpuActivityEvents = [], diskLatencies =
     
     console.log('Setting up terminal with react-xtermjs...');
     
-    // Apply the same theme as the Terminal component
+    // Apply terminal theme
     TerminalThemeSetter(term);
     
     // Configure additional terminal options
     term.options.convertEol = true;
     
-    const fit = new FitAddon();
     const linkAddon = new WebLinksAddon();
     
-    term.loadAddon(fit);
+    // Set terminal dimensions (columns x rows)
+    term.resize(102, 25);
+
+    // Load the web links addon
     term.loadAddon(linkAddon);
     
     term.scrollToTop();
-    fit.fit();
     term.focus();
     term.onData(readData);
     console.log('Terminal setup complete, onData handler attached');
-    
-    setFitAddon(fit);
-    
-    
-    if (configObj.printIntro) {
-      for (let i = 0; i < introMessage.length; i++) {
-        term.write(introMessage[i] + "\n");
-      }
-    }
-    
+
     try {
       await initCheerpX(term);
     } catch (e) {
-      printMessage(unexpectedErrorMessage);
+      printMessage(["Unexpected error occurred:"]);
       printMessage([(e as Error).toString()]);
       return;
     }
@@ -275,15 +267,17 @@ export default function WebVM({ cacheId, cpuActivityEvents = [], diskLatencies =
       
       const cache = await CheerpX.IDBDevice.create(cacheId || "blocks_terminal");
       const overlayDevice = await CheerpX.OverlayDevice.create(blockDevice, cache);
-      const documentsDevice = await CheerpX.WebDevice.create("documents");
-      const rootFilesDevice = await CheerpX.WebDevice.create("root-files");
+      const homeDevice = await CheerpX.WebDevice.create("home");
+      const pongDevice = await CheerpX.WebDevice.create("pong");
+      const contactDevice = await CheerpX.WebDevice.create("contact");
       const dataDevice = await CheerpX.DataDevice.create();
       
       const mountPoints: MountPointConfiguration[] = [
         { type: "ext2", dev: overlayDevice, path: "/" },
         { type: "dir", dev: dataDevice, path: "/data" },
-        { type: "dir", dev: documentsDevice, path: "/home/user/documents" },
-        { type: "dir", dev: rootFilesDevice, path: "/home/user/root-files" }
+        { type: "dir", dev: homeDevice, path: "/home/user/home" },
+        { type: "dir", dev: pongDevice, path: "/home/user/pong" },
+        { type: "dir", dev: contactDevice, path: "/home/user/contact" }
       ];
     
       console.log('Creating CheerpX Linux instance...');
@@ -303,21 +297,10 @@ export default function WebVM({ cacheId, cpuActivityEvents = [], diskLatencies =
       console.log('CheerpX console connected, readFunc:', readFunc, 'cols:', terminalInstance.cols, 'rows:', terminalInstance.rows);
       cxReadFuncRef.current = readFunc;
       
-      // Ensure terminal is focused after CheerpX is ready
-      setTimeout(() => {
-        terminalInstance.focus();
-        console.log('Terminal refocused after CheerpX ready');
-      }, 100);
-      
       setBlockCache(cache);
 
       // Create /dev/null
-      try {
-        await cheerpX.run("/bin/bash", ["-c", "echo -n > /dev/null || true"], configObj.opts);
-        console.log('Created /dev/null successfully');
-      } catch (e) {
-        console.log('Could not create /dev/null:', e);
-      }
+      await cheerpX.run("/bin/bash", ["-c", "echo -n > /dev/null || true"], configObj.opts);
       
       // Run the command in a loop asynchronously
       (async () => {
@@ -327,7 +310,7 @@ export default function WebVM({ cacheId, cpuActivityEvents = [], diskLatencies =
       })();
     } catch (e) {
       console.error('CheerpX initialization failed:', e);
-      printMessage(errorMessage);
+      printMessage(["Unexpected error occurred: "]);
       printMessage([(e as Error).toString()]);
       return;
     }
@@ -361,8 +344,8 @@ export default function WebVM({ cacheId, cpuActivityEvents = [], diskLatencies =
 
   return (
     <Box>
-      {/* WebVM Terminal */}
       <Box
+        ref={termRef}
         sx={{
           mt: 2,
           height: `${TERMINAL_HEIGHT}px`,
@@ -371,12 +354,7 @@ export default function WebVM({ cacheId, cpuActivityEvents = [], diskLatencies =
           boxShadow: '0 0 200px #87ff8734',
           position: 'relative'
         }}
-      >
-        <Box 
-          ref={termRef}
-          sx={{height: '100%', width: '100%'}}
-        />
-      </Box>
+      />
       <WebVmFooter onReset={handleReset} />
     </Box>
   );
