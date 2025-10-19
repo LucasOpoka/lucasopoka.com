@@ -1,12 +1,10 @@
-import React from 'react';
 import { useAtom } from 'jotai';
 import { Box, Typography } from '@mui/material';
-import { diskLatencyAtom } from '../WebVmAtoms';
+import { diskStateAtom } from '../WebVmAtoms';
 import SmallButton from './SmallButton';
-import type { DiskTabProps } from '../../types/webvm';
 
-export default function DiskTab({ onReset }: DiskTabProps): React.JSX.Element {
-  const [diskLatency] = useAtom(diskLatencyAtom);
+export default function DiskTab({ onReset }: { onReset: () => Promise<void> }) {
+  const [diskState] = useAtom(diskStateAtom);
 
   return (
     <Box>
@@ -14,7 +12,7 @@ export default function DiskTab({ onReset }: DiskTabProps): React.JSX.Element {
         Disk
       </Typography>
       <Typography sx={{ marginBottom: '16px' }}>
-        <Typography component="span" sx={{ fontWeight: 'bold' }}>Disk Latency: </Typography>{diskLatency}ms
+        <Typography component="span" sx={{ fontWeight: 'bold' }}>Disk Latency: </Typography>{diskState.latency}ms
       </Typography>
       <Typography sx={{ marginBottom: '16px' }}>
         The virtual disk is implemented using IndexedDB for persistent storage. 

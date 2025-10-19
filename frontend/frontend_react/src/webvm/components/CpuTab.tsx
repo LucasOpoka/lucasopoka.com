@@ -1,9 +1,9 @@
 import React from 'react';
 import { useAtom } from 'jotai';
 import { Box, Typography } from '@mui/material';
-import { cpuPercentageAtom } from '../WebVmAtoms';
+import { cpuStateAtom } from '../WebVmAtoms';
 export default function CpuTab(): React.JSX.Element {
-  const [cpuPercentage] = useAtom(cpuPercentageAtom);
+  const [cpuState] = useAtom(cpuStateAtom);
 
   return (
     <Box>
@@ -11,7 +11,7 @@ export default function CpuTab(): React.JSX.Element {
         Engine
       </Typography>
       <Typography sx={{ marginTop: '16px' }}>
-        <Typography component="span" sx={{ fontWeight: 'bold' }}>Virtual CPU: </Typography>{cpuPercentage}%
+        <Typography component="span" sx={{ fontWeight: 'bold' }}>Virtual CPU: </Typography>{cpuState.percentage}%
       </Typography>
     </Box>
   );

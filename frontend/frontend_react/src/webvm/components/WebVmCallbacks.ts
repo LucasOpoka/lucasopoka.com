@@ -1,28 +1,18 @@
 import React from 'react';
 import { useAtom } from 'jotai';
 import { 
-  cpuActivityAtom, 
-  diskActivityAtom, 
-  diskLatencyAtom,
-  cpuActivityEventsAtom,
-  diskLatenciesAtom,
-  activityEventsIntervalAtom,
-  cpuPercentageAtom
+  diskStateAtom,
+  cpuStateAtom
 } from '../WebVmAtoms';
 import type { ActivityEvent } from '../../types/webvm';
 
 export function createWebVmCallbacks() {
-  const [, setDiskActivity] = useAtom(diskActivityAtom);
-  const [, setDiskLatenciesState] = useAtom(diskLatenciesAtom);
-  const [, setDiskLatency] = useAtom(diskLatencyAtom);
-  const [, setCpuActivity] = useAtom(cpuActivityAtom);
-  const [cpuActivityEventsState, setCpuActivityEventsState] = useAtom(cpuActivityEventsAtom);
-  const [activityEventsIntervalState, setActivityEventsIntervalState] = useAtom(activityEventsIntervalAtom);
-  const [, setCpuPercentage] = useAtom(cpuPercentageAtom);
+  const [, setDiskState] = useAtom(diskStateAtom);
+  const [cpuState, setCpuState] = useAtom(cpuStateAtom);
 
   // Create a ref for the activity events interval
-  const activityEventsIntervalRef = React.useRef(activityEventsIntervalState);
-  activityEventsIntervalRef.current = activityEventsIntervalState;
+  const activityEventsIntervalRef = React.useRef(cpuState.cleanupInterval);
+  activityEventsIntervalRef.current = cpuState.cleanupInterval;
 
   function expireEvents(list: ActivityEvent[], _curTime: number, limitTime: number): ActivityEvent[] {
     const newList = [...list];
@@ -59,55 +49,55 @@ export function createWebVmCallbacks() {
       totalActiveTime += (_curTime - lastActiveTime);
     }
     
-    setCpuPercentage(Math.ceil((totalActiveTime / 10000) * 100));
+    setCpuState(prev => ({ ...prev, percentage: Math.ceil((totalActiveTime / 10000) * 100) }));
   }
 
   function cleanupEvents(): void {
     const curTime = Date.now();
     const limitTime = curTime - 10000;
-    const newCpuEvents = expireEvents(cpuActivityEventsState, curTime, limitTime);
-    setCpuActivityEventsState(newCpuEvents);
+    const newCpuEvents = expireEvents(cpuState.events, curTime, limitTime);
+    setCpuState(prev => ({ ...prev, events: newCpuEvents }));
     computeCpuActivity(curTime, limitTime, newCpuEvents);
     
     if (newCpuEvents.length === 0) {
       if (activityEventsIntervalRef.current !== 0) {
         clearInterval(activityEventsIntervalRef.current);
-        setActivityEventsIntervalState(0);
+        setCpuState(prev => ({ ...prev, cleanupInterval: 0 }));
       }
     }
   }
 
   function hddCallback(state: string | number): void {
-    setDiskActivity(state !== "ready");
+    setDiskState(prev => ({ ...prev, activity: state !== "ready" }));
   }
 
   function latencyCallback(latency: string | number): void {
-    setDiskLatenciesState(function(prev) {
-      const newLatencies = [...prev, Number(latency)];
+    setDiskState(prev => {
+      const newLatencies = [...prev.latencies, Number(latency)];
       if (newLatencies.length > 30) {
         newLatencies.shift();
       }
-      const total = newLatencies.reduce(function(sum, l) { return sum + l; }, 0);
-      const avg = total / newLatencies.length;
-      setDiskLatency(Math.ceil(avg));
-      return newLatencies;
+      // Calculate average latency
+      const total = newLatencies.reduce((sum, l) => sum + l, 0);
+      const averageLatency = newLatencies.length > 0 ? Math.ceil(total / newLatencies.length) : 0;
+      return { ...prev, latencies: newLatencies, latency: averageLatency };
     });
   }
 
   function cpuCallback(state: string | number): void {
-    setCpuActivity(state !== "ready");
+    setCpuState(prev => ({ ...prev, activity: state !== "ready" }));
     const curTime = Date.now();
     const limitTime = curTime - 10000;
-    const newEvents = expireEvents(cpuActivityEventsState, curTime, limitTime);
+    const newEvents = expireEvents(cpuState.events, curTime, limitTime);
     const updatedEvents = [...newEvents, { t: curTime, state: state as 'ready' | 'active' }];
-    setCpuActivityEventsState(updatedEvents);
+    setCpuState(prev => ({ ...prev, events: updatedEvents }));
     computeCpuActivity(curTime, limitTime, updatedEvents);
     
-    if (activityEventsIntervalState !== 0) {
-      clearInterval(activityEventsIntervalState);
+    if (cpuState.cleanupInterval !== 0) {
+      clearInterval(cpuState.cleanupInterval);
     }
     const interval = setInterval(cleanupEvents, 2000) as unknown as number;
-    setActivityEventsIntervalState(interval);
+    setCpuState(prev => ({ ...prev, cleanupInterval: interval }));
     activityEventsIntervalRef.current = interval;
   }
 

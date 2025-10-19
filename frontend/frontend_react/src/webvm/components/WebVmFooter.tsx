@@ -1,15 +1,15 @@
 import React from 'react';
 import { useAtom } from 'jotai';
 import { Box, Typography, Tooltip } from '@mui/material';
-import { cpuPercentageAtom, diskLatencyAtom } from '../WebVmAtoms';
+import { cpuStateAtom, diskStateAtom } from '../WebVmAtoms';
 
 interface WebVmFooterProps {
   onReset: () => Promise<void>;
 }
 
 export default function WebVmFooter({ onReset }: WebVmFooterProps): React.JSX.Element {
-  const [cpuPercentage] = useAtom(cpuPercentageAtom);
-  const [diskLatency] = useAtom(diskLatencyAtom);
+  const [cpuState] = useAtom(cpuStateAtom);
+  const [diskState] = useAtom(diskStateAtom);
 
   return (
     <Box
@@ -20,7 +20,7 @@ export default function WebVmFooter({ onReset }: WebVmFooterProps): React.JSX.El
       }}
     >
       <Tooltip 
-        title={`CPU Usage: ${cpuPercentage}%`} 
+        title={`CPU Usage: ${cpuState.percentage}%`} 
         placement="left"
         slotProps={{
           tooltip: {
@@ -34,15 +34,15 @@ export default function WebVmFooter({ onReset }: WebVmFooterProps): React.JSX.El
         }}
       >
         <Typography sx={{ 
-          color: cpuPercentage > 10 ? 'secondary.main' : 'inherit',
-          fontWeight: cpuPercentage > 10 ? 'bold' : 'normal'
+          color: cpuState.activity ? 'secondary.main' : 'inherit',
+          fontWeight: cpuState.activity ? 'bold' : 'normal'
         }}>
           CPU
         </Typography>
       </Tooltip>
       
       <Tooltip 
-        title={`Disk Latency: ${diskLatency}ms`} 
+        title={`Disk Latency: ${diskState.latency}ms`} 
         placement="left"
         slotProps={{
           tooltip: {
@@ -56,8 +56,8 @@ export default function WebVmFooter({ onReset }: WebVmFooterProps): React.JSX.El
         }}
       >
         <Typography sx={{ 
-          color: diskLatency > 5 ? 'secondary.main' : 'inherit',
-          fontWeight: diskLatency > 5 ? 'bold' : 'normal'
+          color: diskState.activity ? 'secondary.main' : 'inherit',
+          fontWeight: diskState.activity ? 'bold' : 'normal',
         }}>
           Disk
         </Typography>
