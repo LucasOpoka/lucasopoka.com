@@ -6,19 +6,13 @@ import { Box } from '@mui/material';
 import '@xterm/xterm/css/xterm.css';
 import { TerminalThemeSetter } from '../TerminalThemeSetter';
 import { 
-  cpuActivityAtom, 
-  diskActivityAtom, 
-  cpuPercentageAtom, 
-  diskLatencyAtom,
-  blockCacheAtom,
-  cpuActivityEventsAtom,
-  diskLatenciesAtom,
-  activityEventsIntervalAtom
+  blockCacheAtom
 } from '../WebVmAtoms';
 import { configObj } from '../config';
 import WebVmFooter from './WebVmFooter';
 import { useViewNavigation } from '../hooks/useViewNavigation';
-import type { WebVMProps, ActivityEvent, CpuActivityCallback, DiskActivityCallback, DiskLatencyCallback } from '../../types/webvm';
+import type { WebVMProps } from '../../types/webvm';
+import { createWebVmCallbacks } from './WebVmCallbacks';
 import React from 'react';  
 import type { CloudDevice, HttpBytesDevice, GitHubDevice, MountPointConfiguration } from '@leaningtech/cheerpx';
 import type { Terminal } from '@xterm/xterm';
@@ -28,17 +22,9 @@ export const TERMINAL_HEIGHT = 427;
 export const BORDER_WIDTH = 7.5;
 export const BORDER_HEIGHT = 15;
 
-export default function WebVM({ cacheId, cpuActivityEvents = [], diskLatencies = [], activityEventsInterval = 0 }: WebVMProps): React.JSX.Element {
-  const [, setCpuActivity] = useAtom(cpuActivityAtom);
-  const [, setDiskActivity] = useAtom(diskActivityAtom);
-  const [, setCpuPercentage] = useAtom(cpuPercentageAtom);
-  const [, setDiskLatency] = useAtom(diskLatencyAtom);
-  
+export default function WebVM({ cacheId }: WebVMProps): React.JSX.Element {
   // WebVM component atoms
   const [blockCache, setBlockCache] = useAtom(blockCacheAtom);
-  const [cpuActivityEventsState, setCpuActivityEventsState] = useAtom(cpuActivityEventsAtom);
-  const [, setDiskLatenciesState] = useAtom(diskLatenciesAtom);
-  const [activityEventsIntervalState, setActivityEventsIntervalState] = useAtom(activityEventsIntervalAtom);
   
   // Use react-xtermjs hook
   const { instance: term, ref: termRef } = useXTerm();
@@ -46,20 +32,8 @@ export default function WebVM({ cacheId, cpuActivityEvents = [], diskLatencies =
   // Reference to the CheerpX read function
   const cxReadFuncRef = useRef<((char: number) => void) | null>(null);
 
-  const activityEventsIntervalRef = useRef(activityEventsInterval);
-  activityEventsIntervalRef.current = activityEventsInterval;
-
   // Use the view navigation hook - only when CheerpX is ready
   useViewNavigation(term, cxReadFuncRef);
-  
-
-  // Initialize atoms with props
-  useEffect(() => {
-    setCpuActivityEventsState(cpuActivityEvents);
-    setDiskLatenciesState(diskLatencies);
-    setActivityEventsIntervalState(activityEventsInterval);
-    activityEventsIntervalRef.current = activityEventsInterval;
-  }, []); // Empty dependency array - only run on mount
 
   function writeData(buf: Uint8Array, vt: number): void {
     console.log('writeData called with buf:', buf, 'vt:', vt);
@@ -100,92 +74,8 @@ export default function WebVM({ cacheId, cpuActivityEvents = [], diskLatencies =
     }
   }
 
-  function expireEvents(list: ActivityEvent[], _curTime: number, limitTime: number): ActivityEvent[] {
-    const newList = [...list];
-    while (newList.length > 1) {
-      if (newList[1].t < limitTime) {
-        newList.shift();
-      } else {
-        break;
-      }
-    }
-    return newList;
-  }
-
-  function cleanupEvents(): void {
-    const curTime = Date.now();
-    const limitTime = curTime - 10000;
-    const newCpuEvents = expireEvents(cpuActivityEventsState, curTime, limitTime);
-    setCpuActivityEventsState(newCpuEvents);
-    computeCpuActivity(curTime, limitTime, newCpuEvents);
-    
-    if (newCpuEvents.length === 0) {
-      if (activityEventsIntervalRef.current !== 0) {
-        clearInterval(activityEventsIntervalRef.current);
-        setActivityEventsIntervalState(0);
-      }
-    }
-  }
-
-  function computeCpuActivity(_curTime: number, limitTime: number, events: ActivityEvent[]): void {
-    let totalActiveTime = 0;
-    let lastActiveTime = limitTime;
-    let lastWasActive = false;
-    
-    for (let i = 0; i < events.length; i++) {
-      const e = events[i];
-      let eTime = e.t;
-      if (eTime < limitTime) eTime = limitTime;
-      
-      if (e.state === "ready") {
-        totalActiveTime += (eTime - lastActiveTime);
-        lastWasActive = false;
-      } else {
-        lastActiveTime = eTime;
-        lastWasActive = true;
-      }
-    }
-    
-    if (lastWasActive) {
-      totalActiveTime += (_curTime - lastActiveTime);
-    }
-    
-    setCpuPercentage(Math.ceil((totalActiveTime / 10000) * 100));
-  }
-
-  const hddCallback: DiskActivityCallback = (state: string | number): void => {
-    setDiskActivity(state !== "ready");
-  };
-
-  const latencyCallback: DiskLatencyCallback = (latency: string | number): void => {
-    setDiskLatenciesState(prev => {
-      const newLatencies = [...prev, Number(latency)];
-      if (newLatencies.length > 30) {
-        newLatencies.shift();
-      }
-      const total = newLatencies.reduce((sum, l) => sum + l, 0);
-      const avg = total / newLatencies.length;
-      setDiskLatency(Math.ceil(avg));
-      return newLatencies;
-    });
-  };
-
-  const cpuCallback: CpuActivityCallback = (state: string | number): void => {
-    setCpuActivity(state !== "ready");
-    const curTime = Date.now();
-    const limitTime = curTime - 10000;
-    const newEvents = expireEvents(cpuActivityEventsState, curTime, limitTime);
-    const updatedEvents = [...newEvents, { t: curTime, state: state as 'ready' | 'active' }];
-    setCpuActivityEventsState(updatedEvents);
-    computeCpuActivity(curTime, limitTime, updatedEvents);
-    
-    if (activityEventsIntervalState !== 0) {
-      clearInterval(activityEventsIntervalState);
-    }
-    const interval = setInterval(cleanupEvents, 2000) as unknown as number;
-    setActivityEventsIntervalState(interval);
-    activityEventsIntervalRef.current = interval;
-  }
+  // Create callbacks
+  const { hddCallback, latencyCallback, cpuCallback } = createWebVmCallbacks();
 
 
   async function initTerminal(): Promise<void> {
@@ -333,9 +223,6 @@ export default function WebVM({ cacheId, cpuActivityEvents = [], diskLatencies =
   // Cleanup
   useEffect(() => {
     return () => {
-      if (activityEventsIntervalState !== 0) {
-        clearInterval(activityEventsIntervalState);
-      }
       if (term) {
         term.dispose();
       }
