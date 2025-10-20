@@ -252,7 +252,7 @@ get_user_input()
         read -rsn1 input # get 1 char
 
         case $input in
-            'q')    kill -$SIG_QUIT $game_pid
+            $'\003') kill -$SIG_QUIT $game_pid      # Ctrl+C
                     return
                     ;;
             'w')    kill -$SIG_LEFT_UP $game_pid    # w
@@ -320,6 +320,9 @@ start_screen_loop()
     local message_color
     declare -i counter=0
 
+    # Set up signal handler for Ctrl+C
+    trap "clear_game; exit 0;" SIGINT
+
     while [ $counter -le 4 ];
     do
         if (( $counter % 2 == 0 )); then
@@ -339,6 +342,10 @@ start_screen_loop()
         read -rsn1 input # get 1 char
         if [[ $input = "" ]]; then 
             break
+        fi
+        if [[ $input = $'\003' ]]; then
+            clear_game;
+            exit 0;
         fi
     done
 
