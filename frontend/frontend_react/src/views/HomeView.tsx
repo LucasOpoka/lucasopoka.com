@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import Header from '../components/Header'
 import SiteTitle from '../components/SiteTitle'
 import AboveTerminal from '../components/AboveTerminal'
-import Layout from '../components/Layout'
 
 
 function HomeView() {
@@ -12,7 +11,7 @@ function HomeView() {
   }, [])
 
   return (
-    <Layout>
+    <>
       
       <Header />
 
@@ -34,7 +33,7 @@ function HomeView() {
         your head!
       </AboveTerminal>
       
-    </Layout>
+    </>
   )
 }
 

@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import Header from '../components/Header'
 import SiteTitle from '../components/SiteTitle'
 import AboveTerminal from '../components/AboveTerminal'
-import Layout from '../components/Layout'
 
 
 function ContactView() {
@@ -12,7 +11,7 @@ function ContactView() {
   }, [])
 
   return (
-    <Layout>
+    <>
       
       <Header />
 
@@ -29,7 +28,7 @@ function ContactView() {
         Your data persists between sessions using IndexedDB.
       </AboveTerminal>
       
-    </Layout>
+    </>
   )
 }
 

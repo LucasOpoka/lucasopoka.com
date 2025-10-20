@@ -2,8 +2,6 @@ import { useEffect } from 'react'
 import Header from '../components/Header'
 import SiteTitle from '../components/SiteTitle'
 import AboveTerminal from '../components/AboveTerminal'
-import Layout from '../components/Layout'
-
 function PongView() {
 
   useEffect(() => {
@@ -11,7 +9,7 @@ function PongView() {
   }, [])
 
   return (
-    <Layout>
+    <>
       
       <Header />
 
@@ -32,7 +30,7 @@ function PongView() {
         the pinnacle of entertainment.
       </AboveTerminal>
       
-    </Layout>
+    </>
   )
 }
 

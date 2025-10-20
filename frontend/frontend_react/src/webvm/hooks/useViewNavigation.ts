@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Terminal } from '@xterm/xterm';
+import { getDefaultStore } from 'jotai';
+import { cxReadFuncAtom, navigationRunningAtom } from '../WebVmAtoms';
 
 interface ViewNavigationConfig {
   path: string;
@@ -26,7 +28,9 @@ const VIEW_CONFIGS: Record<string, ViewNavigationConfig> = {
   }
 };
 
-export function useViewNavigation(terminal: Terminal | null, cxReadFuncRef: React.MutableRefObject<((char: number) => void) | null>) {
+const store = getDefaultStore();
+
+export function useViewNavigation(terminal: Terminal | null) {
   const location = useLocation();
   const lastExecutedView = useRef<string | null>(null);
 
@@ -50,38 +54,73 @@ export function useViewNavigation(terminal: Terminal | null, cxReadFuncRef: Reac
     lastExecutedView.current = currentPath;
     
     // CD and show ASCII art
-    const executeViewNavigation = async () => {
+    async function executeViewNavigation() {
       try {
-        // Wait for WebVM to be ready by checking cxReadFuncRef
-        await waitForWebVMReady();
+        if (!terminal) {
+          return;
+        }
+        // Set navigation as running
+        store.set(navigationRunningAtom, true);
         
+        await waitForWebVMReady();
+
+        // Clear screen and add prompt
+        await waitForPrompt(terminal);
+
+        const cxReadFunc = store.get(cxReadFuncAtom).func;  
+        if (!cxReadFunc) {
+          throw new Error('No cxReadFunc');
+        }
+        // Send enter
+        cxReadFunc('\n'.charCodeAt(0));
+
+        // Send Ctrl+D
+        cxReadFunc(4);
+
+        // Send Ctrl+C
+        cxReadFunc(3);
+
+        // Send Ctrl+L
+        cxReadFunc(12);
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Navigate to directory and show the ASCII art
         const cdCommand = `cd ${config.directory} && cat ${config.asciiArtFile}`;
         await executeCommandInTerminal(cdCommand);
+        terminal.focus();
       } catch (error) {
         console.error('Error executing view navigation:', error);
+      } finally {
+        // Set navigation as completed
+        store.set(navigationRunningAtom, false);
       }
     };
 
     executeViewNavigation();
-  }, [location.pathname, terminal, cxReadFuncRef]);
+  }, [location.pathname, terminal]);
 
-  async function waitForWebVMReady(): Promise<void> {
+
+  async function waitForWebVMReady() {
     const startTime = Date.now();
     const maxWaitTime = 10000; // 10 seconds max wait time
     
     while (Date.now() - startTime < maxWaitTime) {
-      if (cxReadFuncRef.current) {
+      const cxReadFunc = store.get(cxReadFuncAtom).func;
+      if (cxReadFunc) {
         return;
       }
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-    
+
     throw new Error('WebVM did not initialize');
   };
 
-  const executeCommandInTerminal = async (command: string): Promise<void> => {
-    if (!cxReadFuncRef.current || !terminal) {
-      return;
+
+  async function executeCommandInTerminal(command: string) {
+    const cxReadFunc = store.get(cxReadFuncAtom).func;
+    if (!terminal || !cxReadFunc) {
+      throw new Error('No terminal or cxReadFunc');
     }
 
     // Wait for the prompt to be ready
@@ -89,15 +128,16 @@ export function useViewNavigation(terminal: Terminal | null, cxReadFuncRef: Reac
     
     // Send the command with a small delay to make it look natural
     for (let i = 0; i < command.length; i++) {
-      cxReadFuncRef.current(command.charCodeAt(i));
+      cxReadFunc(command.charCodeAt(i));
       await new Promise(resolve => setTimeout(resolve, 30));
     }
     
     // Send newline to execute
-    cxReadFuncRef.current('\n'.charCodeAt(0));
+    cxReadFunc('\n'.charCodeAt(0));
   };
 
-  async function waitForPrompt(terminal: Terminal): Promise<void> {
+
+  async function waitForPrompt(terminal: Terminal) {
     const startTime = Date.now();
     const maxWaitTime = 1000; // 1 second max wait time
     
@@ -105,16 +145,22 @@ export function useViewNavigation(terminal: Terminal | null, cxReadFuncRef: Reac
       
       // Check if the terminal has the prompt pattern
       const buffer = terminal.buffer;
-      const currentLine = buffer.active.getLine(buffer.active.cursorY)?.translateToString() || '';
-      const trimmedLine = currentLine.trim();
-
-      if (trimmedLine.includes('user@:') && trimmedLine.endsWith('$')) {
-        return;
+      const bufferHeight = buffer.active.length;
+      
+      // Search the whole buffer starting from the last line
+      for (let i = bufferHeight - 1; i >= 0; i--) {
+        const line = buffer.active.getLine(i)?.translateToString() || '';
+        const promptRegex = /^user@:~(\/.*)?\$\s/;
+        
+        const match = line.match(promptRegex);
+        if (match) {
+          return;
+        }
       }
       
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-    
+
     throw new Error('Prompt did not appear within maximum wait time');
   };
 }

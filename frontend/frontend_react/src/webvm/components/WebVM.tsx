@@ -1,54 +1,32 @@
-import { useEffect, useRef } from 'react';
-import { useAtom } from 'jotai';
+import { useEffect } from 'react';
 import { useXTerm } from 'react-xtermjs';
 import { Box } from '@mui/material';
 import '@xterm/xterm/css/xterm.css';
-import { 
-  blockCacheAtom
-} from '../WebVmAtoms';
+import { blockCacheAtom } from '../WebVmAtoms';
 import WebVmFooter from './WebVmFooter';
 import { useViewNavigation } from '../hooks/useViewNavigation';
-import { createWebVmCallbacks } from './WebVmCallbacks';
-import { initTerminal, initCheerpX } from './WebVmInitTerminal.tsx';
+import { initTerminal } from './WebVmInitTerminal.tsx';
+import { initCheerpX } from './WebVmInitCheerpX.ts';
+import { getDefaultStore } from 'jotai';
 
 export const TERMINAL_WIDTH = 797;
 export const TERMINAL_HEIGHT = 427;
 export const BORDER_WIDTH = 7.5;
 export const BORDER_HEIGHT = 15;
 
-export default function WebVM(cacheId: string) {
+export default function WebVM() {
 
   // Create terminal instance
   const { instance: term, ref: termRef } = useXTerm();
 
-  // WebVM component atoms
-  const [blockCache, setBlockCache] = useAtom(blockCacheAtom);
-
-  // Reference to the CheerpX read function
-  const cxReadFuncRef = useRef<((char: number) => void) | null>(null);
-
   // Use the view navigation hook - only when CheerpX is ready
-  useViewNavigation(term, cxReadFuncRef);
-
-  // Create callbacks
-  const { hddCallback, latencyCallback, cpuCallback } = createWebVmCallbacks();
+  useViewNavigation(term);
 
   // Initialize terminal and virtual machine
   useEffect(() => {
     const initializeWebVM = async () => {
-      initTerminal(
-        term,
-        cxReadFuncRef
-      );
-      await initCheerpX({
-        term,
-        cxReadFuncRef,
-        setBlockCache,
-        hddCallback,
-        latencyCallback,
-        cpuCallback,
-        cacheId
-      });
+      initTerminal(term);
+      await initCheerpX(term);
     };
     
     initializeWebVM();
@@ -56,6 +34,7 @@ export default function WebVM(cacheId: string) {
 
 
   async function handleReset(): Promise<void> {
+    const blockCache = getDefaultStore().get(blockCacheAtom);
     if (blockCache === null) return;
     await blockCache.reset();
     location.reload();

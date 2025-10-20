@@ -23,7 +23,7 @@ function Layout({ children }: LayoutProps) {
       }}
     >
       {children}
-      <WebVM cacheId="blocks_terminal" />
+      <WebVM />
       <Footer />
     </Box>
   )
