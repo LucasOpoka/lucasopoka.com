@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Terminal } from '@xterm/xterm';
 import { getDefaultStore } from 'jotai';
-import { cxReadFuncAtom, navigationRunningAtom } from '../WebVmAtoms';
+import { cxReadFuncAtom } from '../WebVmAtoms';
 
 interface ViewNavigationConfig {
   path: string;
@@ -59,31 +59,12 @@ export function useViewNavigation(terminal: Terminal | null) {
         if (!terminal) {
           return;
         }
-        // Set navigation as running
-        store.set(navigationRunningAtom, true);
-        
+
+        // Wait for the WebVM to be ready
         await waitForWebVMReady();
 
         // Clear screen and add prompt
         await waitForPrompt(terminal);
-
-        const cxReadFunc = store.get(cxReadFuncAtom).func;  
-        if (!cxReadFunc) {
-          throw new Error('No cxReadFunc');
-        }
-        // Send enter
-        cxReadFunc('\n'.charCodeAt(0));
-
-        // Send Ctrl+D
-        cxReadFunc(4);
-
-        // Send Ctrl+C
-        cxReadFunc(3);
-
-        // Send Ctrl+L
-        cxReadFunc(12);
-
-        await new Promise(resolve => setTimeout(resolve, 100));
 
         // Navigate to directory and show the ASCII art
         const cdCommand = `cd ${config.directory} && cat ${config.asciiArtFile}`;
@@ -91,30 +72,11 @@ export function useViewNavigation(terminal: Terminal | null) {
         terminal.focus();
       } catch (error) {
         console.error('Error executing view navigation:', error);
-      } finally {
-        // Set navigation as completed
-        store.set(navigationRunningAtom, false);
-      }
+      } 
     };
 
     executeViewNavigation();
   }, [location.pathname, terminal]);
-
-
-  async function waitForWebVMReady() {
-    const startTime = Date.now();
-    const maxWaitTime = 10000; // 10 seconds max wait time
-    
-    while (Date.now() - startTime < maxWaitTime) {
-      const cxReadFunc = store.get(cxReadFuncAtom).func;
-      if (cxReadFunc) {
-        return;
-      }
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    throw new Error('WebVM did not initialize');
-  };
 
 
   async function executeCommandInTerminal(command: string) {
@@ -134,6 +96,22 @@ export function useViewNavigation(terminal: Terminal | null) {
     
     // Send newline to execute
     cxReadFunc('\n'.charCodeAt(0));
+  };
+
+
+  async function waitForWebVMReady() {
+    const startTime = Date.now();
+    const maxWaitTime = 10000; // 10 seconds max wait time
+    
+    while (Date.now() - startTime < maxWaitTime) {
+      const cxReadFunc = store.get(cxReadFuncAtom).func;
+      if (cxReadFunc) {
+        return;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    throw new Error('WebVM did not initialize');
   };
 
 

@@ -1,7 +1,10 @@
 import { useEffect } from 'react'
+import Layout from '../components/Layout'
 import Header from '../components/Header'
 import SiteTitle from '../components/SiteTitle'
 import AboveTerminal from '../components/AboveTerminal'
+import WebVM from '../webvm/components/WebVM'
+import Footer from '../components/Footer'
 
 
 function HomeView() {
@@ -11,7 +14,7 @@ function HomeView() {
   }, [])
 
   return (
-    <>
+    <Layout>
       
       <Header />
 
@@ -32,8 +35,12 @@ function HomeView() {
         reach out if any of my work makes a 💡 appear over
         your head!
       </AboveTerminal>
+
+      <WebVM />
       
-    </>
+      <Footer />
+      
+    </Layout>
   )
 }
 

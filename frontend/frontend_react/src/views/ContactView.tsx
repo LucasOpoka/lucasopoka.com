@@ -1,7 +1,10 @@
 import { useEffect } from 'react'
+import Layout from '../components/Layout'
 import Header from '../components/Header'
 import SiteTitle from '../components/SiteTitle'
 import AboveTerminal from '../components/AboveTerminal'
+import Footer from '../components/Footer'
+import WebVM from '../webvm/components/WebVM'
 
 
 function ContactView() {
@@ -11,7 +14,7 @@ function ContactView() {
   }, [])
 
   return (
-    <>
+    <Layout>
       
       <Header />
 
@@ -28,7 +31,9 @@ function ContactView() {
         Your data persists between sessions using IndexedDB.
       </AboveTerminal>
       
-    </>
+      <WebVM />
+      <Footer />
+    </Layout>
   )
 }
 

@@ -1,7 +1,5 @@
 import { Box } from '@mui/material'
 import { type ReactNode } from 'react'
-import WebVM from '../webvm/components/WebVM'
-import Footer from './Footer'
 
 interface LayoutProps {
   children: ReactNode
@@ -23,8 +21,6 @@ function Layout({ children }: LayoutProps) {
       }}
     >
       {children}
-      <WebVM />
-      <Footer />
     </Box>
   )
 }

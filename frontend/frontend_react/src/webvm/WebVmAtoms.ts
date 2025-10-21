@@ -21,5 +21,3 @@ export const blockCacheAtom = atom<IDBDevice | null>(null);
 // Atom to store the read function of CheerpX
 export const cxReadFuncAtom = atom<{ func: ((char: number) => void) | null }>({ func: null });
 
-// Atom to track if navigation is currently running
-export const navigationRunningAtom = atom<boolean>(false);
