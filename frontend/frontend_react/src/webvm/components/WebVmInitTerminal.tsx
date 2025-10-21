@@ -1,6 +1,7 @@
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { TerminalThemeSetter } from '../TerminalThemeSetter';
 import type { Terminal } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
 
 
 export function initTerminal(term: Terminal | null): void {
@@ -17,14 +18,16 @@ export function initTerminal(term: Terminal | null): void {
   term.options.convertEol = true;
   
   const linkAddon = new WebLinksAddon();
-  
-  // Set terminal dimensions (columns x rows)
-  term.resize(102, 25);
+  const fitAddon = new FitAddon();
+
 
   // Load the web links addon
   term.loadAddon(linkAddon);
-  
+  term.loadAddon(fitAddon);
+
+  fitAddon.fit();
   term.scrollToTop();
   term.focus();
+  
   console.log('Terminal setup complete');
 }
