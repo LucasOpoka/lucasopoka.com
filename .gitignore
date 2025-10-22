@@ -9,6 +9,7 @@ dist/
 build/
 
 # Disk images
+disk-images/
 frontend/frontend_react/public/disk-images/
 
 # Environment variables
