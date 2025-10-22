@@ -1,7 +1,7 @@
 // Export the config object
 export const configObj = {
   // The root filesystem location (base name for chunked images)
-  diskImageUrl: "/disk-images/debian_mini_20251020_18666753016.ext2",
+  diskImageUrl: "/disk-images/debian_mini_20230519_5022088024.ext2",
   // The root filesystem backend type (github for chunked images)
   diskImageType: "github",
   // Executable full path (Required)
