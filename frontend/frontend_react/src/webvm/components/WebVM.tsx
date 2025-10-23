@@ -28,7 +28,7 @@ export default function WebVM() {
       initTerminal(term);
       await initCheerpX(term);
     };
-    
+
     initializeWebVM();
   }, [term]);
 
@@ -59,7 +59,21 @@ export default function WebVM() {
           width: `${TERMINAL_WIDTH}px`,
           border: '1px solid #87ff8755',
           boxShadow: '0 0 200px #87ff8734',
-          position: 'relative'
+          // Hide Xterm terminal scrollbar
+          '& .xterm-viewport': {
+            '&::-webkit-scrollbar': {
+              width: '0px',
+              background: 'transparent',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'transparent',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: 'transparent',
+            },
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          },
         }}
       />
       <WebVmFooter onReset={handleReset} />

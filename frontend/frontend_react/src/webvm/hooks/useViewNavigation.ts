@@ -117,7 +117,7 @@ export function useViewNavigation(terminal: Terminal | null) {
 
   async function waitForPrompt(terminal: Terminal) {
     const startTime = Date.now();
-    const maxWaitTime = 1000; // 1 second max wait time
+    const maxWaitTime = 10000; // 10 seconds max wait time
     
     while (Date.now() - startTime < maxWaitTime) {
       

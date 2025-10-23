@@ -1,0 +1,35 @@
+const RSET = '[0m'      // Reset all formatting
+const BLUE = '[34m'     // Blue color
+const PINK = '[38;5;201m' // Pink color  
+const ORNG = '[38;5;214m' // Orange color
+const YLLW = '[38;5;226m' // Yellow color
+const CYAN = '[38;5;87m'  // Cyan color
+const GRAY = '[38;5;241m' // Gray color
+const REDD = '[38;5;211m'  // Red color
+const GREN = '[38;5;120m' // Green color
+const ITAL = '[3m'       // Italic text
+
+const text = `
+  ${BLUE}     ___${RSET}${PINK}/\\/\\/\\/\\${BLUE}____${RSET}${PINK}/\\/\\/\\/\\/\\${BLUE}____${RSET}${PINK}/\\/\\${BLUE}_______${RSET}      ${CYAN}Can this be a Linux VM in your browser!?${RSET}
+  ${BLUE}    _${RSET}${ORNG}/\\/\\${BLUE}____${RSET}${ORNG}/\\/\\${BLUE}__${RSET}${ORNG}/\\/\\${BLUE}____${RSET}${ORNG}/\\/\\${BLUE}__${RSET}${ORNG}/\\/\\${BLUE}_______${RSET}       ${CYAN}The answer is yes, yes it can!${RSET}
+  ${BLUE}   _${RSET}${YLLW}/\\/\\${BLUE}____${RSET}${YLLW}/\\/\\${BLUE}__${RSET}${YLLW}/\\/\\/\\/\\/\\${BLUE}____${RSET}${YLLW}/\\/\\${BLUE}_______${RSET}        ${CYAN}Try your usual Linux shenanigans,${RSET}
+  ${BLUE}  _${RSET}${YLLW}/\\/\\${BLUE}____${RSET}${YLLW}/\\/\\${BLUE}__${RSET}${YLLW}/\\/\\${BLUE}__________${RSET}${YLLW}/\\/\\${BLUE}_______${RSET}         ${CYAN}compile and run my projects${RSET}
+  ${BLUE} ___${RSET}${YLLW}/\\/\\/\\/\\${BLUE}____${RSET}${YLLW}/\\/\\${BLUE}__________${RSET}${YLLW}/\\/\\/\\/\\/\\${BLUE}_${RSET}          ${CYAN}or write and test your own code!${RSET}
+${RSET}
+  ${GRAY}┌─${RSET}${CYAN}About${RSET}${GRAY}────────────────────────────────────────┐${RSET} ${GRAY}┌─${RSET}${CYAN}Usage${RSET}${GRAY}─────────┬───────────────────────────────┐${RSET}
+  ${GRAY}│${RSET}                                              ${GRAY}│${RSET} ${GRAY}│${RSET}               ${GRAY}│${RSET}                               ${GRAY}│${RSET}
+  ${GRAY}│${RSET} ${CYAN}The site features a full fledged Linux VM${RSET}    ${GRAY}│${RSET} ${GRAY}│${RSET} ${REDD}help${RSET}          ${GRAY}│${RSET} ${ITAL}${REDD}Show available commands${RSET}       ${GRAY}│${RSET}
+  ${GRAY}│${RSET} ${CYAN}containing my portfolio. Check my projects${RSET}   ${GRAY}│${RSET} ${GRAY}│${RSET} ${REDD}clear/ctlr+l${RSET}  ${GRAY}│${RSET} ${ITAL}${REDD}Clear the terminal screen${RSET}     ${GRAY}│${RSET}
+  ${GRAY}│${RSET} ${CYAN}in this isolated environment! Restart the${RSET}    ${GRAY}│${RSET} ${GRAY}│${RSET} ${REDD}cd/pwd${RSET}        ${GRAY}│${RSET} ${ITAL}${REDD}Navigate between directories${RSET}  ${GRAY}│${RSET}
+  ${GRAY}│${RSET} ${CYAN}VM be reloading the page. The file system${RSET}    ${GRAY}│${RSET} ${GRAY}│${RSET} ${REDD}gcc/python3  ${RSET} ${GRAY}│${RSET} ${ITAL}${REDD}Ways to compile or run${RSET}        ${GRAY}│${RSET}
+  ${GRAY}│${RSET} ${CYAN}is persistent, reset with the button below${RSET}   ${GRAY}│${RSET} ${GRAY}│${RSET} ${REDD}lua/ruby/node${RSET} ${GRAY}│${RSET} ${ITAL}${REDD}programs${RSET}                      ${GRAY}│${RSET}
+  ${GRAY}└──────────────────────────────────────────────┘${RSET} ${GRAY}└───────────────┴───────────────────────────────┘${RSET}
+                                                    
+  ${BLUE}Additional info${RSET}
+
+  ${ORNG}>${RSET}${YLLW} The site and VM are frontend only, all the data/code you use in the VM stays on your device.${RSET}
+  ${ORNG}>${RSET}${YLLW} The VM file system is persistent by using IndexedDB. To reset it, click the Reset Disk button.${RSET}
+  ${ORNG}>${RSET}${YLLW} If you feel so inclined, you can access this view in your terminal with: curl lucasopoka.com.${RSET}
+  ${ORNG}>${RSET}${YLLW} Lastly, but perhaps most importantly, you can find some programs to run in /home/user/examples.${RSET}
+${RSET}
+`

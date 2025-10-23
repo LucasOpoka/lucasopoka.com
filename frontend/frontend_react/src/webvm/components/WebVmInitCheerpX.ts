@@ -84,10 +84,12 @@ export async function initCheerpX(term: Terminal | null): Promise<void> {
     const cache = await CheerpX.IDBDevice.create(CACHE_ID);
     const overlayDevice = await CheerpX.OverlayDevice.create(blockDevice, cache);
     const dataDevice = await CheerpX.DataDevice.create();
+    const asciiDevice = await CheerpX.WebDevice.create("pong");
     
     const mountPoints: MountPointConfiguration[] = [
       { type: "ext2", dev: overlayDevice, path: "/" },
       { type: "dir", dev: dataDevice, path: "/data" },
+      { type: "dir", dev: asciiDevice, path: "/home/user/ascii-test" },
     ];
   
     console.log('Creating CheerpX Linux instance...');
