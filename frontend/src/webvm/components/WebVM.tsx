@@ -9,10 +9,8 @@ import { initTerminal } from './WebVmInitTerminal.tsx';
 import { initCheerpX } from './WebVmInitCheerpX.ts';
 import { getDefaultStore } from 'jotai';
 
-export const TERMINAL_WIDTH = 797;
-export const TERMINAL_HEIGHT = 427;
-export const BORDER_WIDTH = 7.5;
-export const BORDER_HEIGHT = 15;
+export const TERMINAL_WIDTH = 800;
+export const TERMINAL_HEIGHT = 422;
 
 export default function WebVM() {
 
