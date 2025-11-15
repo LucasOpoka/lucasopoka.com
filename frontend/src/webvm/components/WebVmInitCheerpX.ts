@@ -13,13 +13,10 @@ const CACHE_ID = "terminal_cache";
 const store = getDefaultStore();
 
 function writeData(term: Terminal, buf: Uint8Array, vt: number): void {
-  console.log('writeData called with buf:', buf, 'vt:', vt);
   if (vt !== 1) {
-    console.log('Ignoring writeData, vt !== 1');
     return;
   }
   if (term) {
-    console.log('Writing to terminal:', buf);
     term.write(buf);
   } else {
     console.log('Terminal instance is null, cannot write');
@@ -31,7 +28,6 @@ function readData(str: string, readFunc: ((char: number) => void) | null): void 
     console.log('cxReadFunc is not available or not a function, ignoring input');
     return;
   }
-  console.log('Sending input to CheerpX:', str);
   try {
     for (let i = 0; i < str.length; i++) {
       readFunc(str.charCodeAt(i));
