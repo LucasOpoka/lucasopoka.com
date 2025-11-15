@@ -6,11 +6,11 @@ set -e  # Exit on any error
 
 # Configuration
 EXT2_IMAGE="disk-images/debian_mini_20230519_5022088024.ext2"
-PUBLIC_DIR="frontend/frontend_react/public"
+PUBLIC_DIR="frontend/public"
 MOUNT_POINT="/tmp/ext2_mount"
 CHUNK_SIZE="10M"
-OUTPUT_DIR="frontend/frontend_react/public/disk-images"
-MANIFEST_FILE="frontend/frontend_react/public/disk-images/manifest.txt"
+OUTPUT_DIR="frontend/public/disk-images"
+MANIFEST_FILE="frontend/public/disk-images/manifest.txt"
 
 # Colors for output
 RED='\033[0;31m'
@@ -122,7 +122,7 @@ cp "$EXT2_IMAGE" "${EXT2_IMAGE}.backup"
 
 
 # Create chunked images directly in the target directory
-echo_info "Creating chunked images directly in frontend/frontend_react/public/disk-images..."
+echo_info "Creating chunked images directly in frontend/public/disk-images..."
 cd "$OUTPUT_DIR"
 # Use exact same split command as GitHub workflow
 split "$WORKING_IMAGE" "$(basename "$EXT2_IMAGE").c" -a 6 -b 128k -x --additional-suffix=.txt
@@ -136,18 +136,18 @@ rmdir "$MOUNT_POINT"
 rm -f "$WORKING_IMAGE"
 
 # Files are already created directly in the target directory
-echo_info "Chunked files created directly in frontend/frontend_react/public/disk-images"
+echo_info "Chunked files created directly in frontend/public/disk-images"
 
 echo_info "Processing complete!"
 echo_info "Chunked images created directly in:"
-echo_info "  - frontend/frontend_react/public/disk-images/ (chunk files and .meta file)"
-echo_info "Meta file: frontend/frontend_react/public/disk-images/$(basename "$EXT2_IMAGE").meta"
+echo_info "  - frontend/public/disk-images/ (chunk files and .meta file)"
+echo_info "Meta file: frontend/public/disk-images/$(basename "$EXT2_IMAGE").meta"
 echo_info "Original image backed up as: ${EXT2_IMAGE}.backup"
 
 # Display chunk count
 echo_info "Chunk files created:"
-if [[ -d "frontend/frontend_react/public/disk-images" ]]; then
-    CHUNK_COUNT=$(ls "frontend/frontend_react/public/disk-images"/*.c* 2>/dev/null | wc -l)
+if [[ -d "frontend/public/disk-images" ]]; then
+    CHUNK_COUNT=$(ls "frontend/public/disk-images"/*.c* 2>/dev/null | wc -l)
     echo_info "Number of chunk files: $CHUNK_COUNT"
 else
     echo_error "public/disk-images directory not found"

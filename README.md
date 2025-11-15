@@ -1,12 +1,18 @@
-Usage:
+Build:
 ```bash
-docker compose up --build
-docker-compose -f docker-compose-react.yml up --build
+cd frontend
+npm install
+npm run build
 ```
 
-Access the site at https://127.0.0.1:8042/
+Dev:
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 Download ext2 image with:
-```
+```bash
 curl -L -O "https://github.com/leaningtech/webvm/releases/download/ext2_image/debian_mini_20230519_5022088024.ext2"
 ```
