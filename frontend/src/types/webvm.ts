@@ -9,6 +9,3 @@ export interface ActivityEvent {
   state: 'ready' | 'active';
 }
 
-// CheerpX types
-export type DiskImageType = 'cloud' | 'bytes' | 'github';
-

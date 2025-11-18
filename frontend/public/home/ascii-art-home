@@ -18,6 +18,5 @@
 
   [38;5;214m>[0m[38;5;226m The site and VM are frontend only, all the data/code you use in the VM stays on your device.[0m
   [38;5;214m>[0m[38;5;226m The VM file system is persistent by using IndexedDB. To reset it, click the Reset Disk button.[0m
-  [38;5;214m>[0m[38;5;226m If you feel so inclined, you can access this view in your terminal with: curl lucasopoka.com.[0m
   [38;5;214m>[0m[38;5;226m Lastly, but perhaps most importantly, you can find some programs to run in /home/user/examples.[0m
 [0m

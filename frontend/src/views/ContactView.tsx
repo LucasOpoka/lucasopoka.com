@@ -21,14 +21,14 @@ function ContactView() {
       <SiteTitle />
   
       <AboveTerminal>
-        Can this really be a Linux running in your browser? <br />
-        The answer is yes, yes it can! <br />
+        If you came that far, I hope you enjoyed my little corner in the inter webs. 🌐 <br />
+        Both for the programming and the, I hope, abundant absurd! <br />
         <br />
-        Use it as any other Linux, create directories, edit files, run programs, etc.
+        I do like to have fun with programming, after all, I'm just pressing them buttons
+        to appease the machine gods! ⌨️ <br />
         <br />
-        <br />
-        Check the CPU and disk monitoring in under the terminal. <br />
-        Your data persists between sessions using IndexedDB.
+        In case you found my work interesting, want to ask about my button pressing technique,
+        or click together on some project, please do reach out! ✉️
       </AboveTerminal>
       
       <WebVM />
