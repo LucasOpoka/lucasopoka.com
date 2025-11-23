@@ -36,6 +36,6 @@ RUN openssl req -x509 -nodes \
     -keyout /etc/nginx/ssl/certificate.key \
     -subj "/C=FI/ST=UUSIMA/L=HELSINKI/O=OPOKA/OU=LUCAS/CN=ItzAMeMario"
 
-EXPOSE 8000
+EXPOSE 80 443
 
 CMD ["nginx", "-g", "daemon off;"]
