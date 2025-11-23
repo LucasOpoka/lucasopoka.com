@@ -14,17 +14,17 @@ const VIEW_CONFIGS: Record<string, ViewNavigationConfig> = {
   '/': {
     path: '/',
     directory: '/home/user/home',
-    asciiArtFile: 'ascii-art-home'
+    asciiArtFile: 'home'
   },
   '/pong': {
     path: '/pong',
     directory: '/home/user/pong',
-    asciiArtFile: 'ascii-art-pong'
+    asciiArtFile: 'pong'
   },
   '/contact': {
     path: '/contact',
     directory: '/home/user/contact',
-    asciiArtFile: 'ascii-art-contact'
+    asciiArtFile: 'contact'
   }
 };
 
