@@ -33,3 +33,17 @@ Download ext2 image with:
 ```bash
 curl -L -O "https://github.com/leaningtech/webvm/releases/download/ext2_image/debian_mini_20230519_5022088024.ext2"
 ```
+
+## ASCII Art
+
+Copy ASCII art files from the `AsciiArt/` directory to the frontend directories:
+
+```bash
+./copy_ascii_art.sh
+```
+
+This script copies the ASCII art files (`pong`, `home`, `contact`) from `AsciiArt/` to:
+- `frontend/frontend_txt/` (for the text version)
+- `frontend/frontend_react/public/` (for the React version)
+
+Run this script whenever you update the ASCII art files in the `AsciiArt/` directory.
