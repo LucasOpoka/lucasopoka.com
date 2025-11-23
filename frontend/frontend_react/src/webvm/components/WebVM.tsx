@@ -57,6 +57,7 @@ export default function WebVM() {
           width: `${TERMINAL_WIDTH}px`,
           border: '1px solid #87ff8755',
           boxShadow: '0 0 200px #87ff8734',
+          backgroundColor: 'black',
           // Hide Xterm terminal scrollbar
           '& .xterm-viewport': {
             '&::-webkit-scrollbar': {

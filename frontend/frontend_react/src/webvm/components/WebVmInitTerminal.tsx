@@ -1,7 +1,6 @@
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { TerminalThemeSetter } from '../TerminalThemeSetter';
 import type { Terminal } from '@xterm/xterm';
-import { FitAddon } from '@xterm/addon-fit';
 
 
 export function initTerminal(term: Terminal | null): void {
@@ -18,18 +17,27 @@ export function initTerminal(term: Terminal | null): void {
   term.options.convertEol = true;
 
   const linkAddon = new WebLinksAddon();
-  const fitAddon = new FitAddon();
-
 
   // Load the web links addon
   term.loadAddon(linkAddon);
-  term.loadAddon(fitAddon);
 
-  // Use fitAddon for height as line spacing differs between Chrome and Firefox
-  fitAddon.fit();
-  // Set width manually as fitAddon leaves empty margin on the right
-  term.resize(102, term.rows);
-  
+  // Wait for fonts to load before fitting (critical for Firefox)
+  async function initializeTerminal() {
+    if (!term) {
+      return;
+    }
+    // Wait for fonts to be ready (especially important for "Fira Mono")
+    await document.fonts.ready;
+    // Use double requestAnimationFrame to ensure DOM and fonts are fully rendered
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        term.resize(102, 28);
+      });
+    });
+  };
+
+  initializeTerminal();
+
   term.scrollToTop();
   term.focus();
 

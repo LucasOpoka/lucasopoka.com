@@ -1,16 +1,33 @@
+## Development
+
+Dev:
+```bash
+cd frontend/frontend_react
+npm install
+npm run dev
+```
+
+## Building
+
 Build:
 ```bash
-cd frontend
+cd frontend/frontend_react
 npm install
 npm run build
 ```
 
-Dev:
+## Docker
+
+Build and run with Docker Compose:
 ```bash
-cd frontend
-npm install
-npm run dev
+docker compose up --build
 ```
+
+The site will be available at:
+- HTTPS: https://localhost:8000 (React version)
+- HTTP: http://localhost:8000 (Text version for curl user agents)
+
+## Disk Images
 
 Download ext2 image with:
 ```bash
