@@ -44,3 +44,7 @@ coverage/
 
 # ESLint cache
 .eslintcache
+
+# Server/deployment files
+lucasopoka-server/
+ssl/

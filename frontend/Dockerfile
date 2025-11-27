@@ -28,13 +28,8 @@ COPY frontend_txt /usr/share/nginx/txt
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Create SSL certificates
-RUN apk add --no-cache openssl
+# Create SSL directory (certificates will be mounted as volumes)
 RUN mkdir -p /etc/nginx/ssl
-RUN openssl req -x509 -nodes \
-    -out /etc/nginx/ssl/certificate.crt \
-    -keyout /etc/nginx/ssl/certificate.key \
-    -subj "/C=FI/ST=UUSIMA/L=HELSINKI/O=OPOKA/OU=LUCAS/CN=ItzAMeMario"
 
 EXPOSE 80 443
 
