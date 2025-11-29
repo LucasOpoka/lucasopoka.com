@@ -10,7 +10,7 @@ import { initCheerpX } from './WebVmInitCheerpX.ts';
 import { getDefaultStore } from 'jotai';
 
 export const TERMINAL_WIDTH = 800;
-export const TERMINAL_HEIGHT = 422;
+export const TERMINAL_HEIGHT = 427;
 
 export default function WebVM() {
 
@@ -58,21 +58,6 @@ export default function WebVM() {
           border: '1px solid #87ff8755',
           boxShadow: '0 0 200px #87ff8734',
           backgroundColor: 'black',
-          // Hide Xterm terminal scrollbar
-          '& .xterm-viewport': {
-            '&::-webkit-scrollbar': {
-              width: '0px',
-              background: 'transparent',
-            },
-            '&::-webkit-scrollbar-track': {
-              background: 'transparent',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              background: 'transparent',
-            },
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-          },
         }}
       />
       <WebVmFooter onReset={handleReset} />
