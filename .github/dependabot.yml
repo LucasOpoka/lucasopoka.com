@@ -2,6 +2,7 @@ version: 2
 updates:
   - package-ecosystem: npm
     directory: /frontend/frontend_react
+    target-branch: develop
     schedule:
       interval: weekly
     groups:
@@ -10,10 +11,12 @@ updates:
 
   - package-ecosystem: github-actions
     directory: /
+    target-branch: develop
     schedule:
       interval: weekly
 
   - package-ecosystem: docker
     directory: /frontend
+    target-branch: develop
     schedule:
       interval: weekly
