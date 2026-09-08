@@ -4,7 +4,7 @@
 # by ../process_ext2.sh, then published via ../deploy/publish-disk-image.sh. Kept as its own
 # stage so its own cache layer only invalidates when DISK_IMAGE_VERSION actually changes, not on
 # every app source code change.
-FROM alpine:3.20 AS disk-images
+FROM alpine:3.24 AS disk-images
 
 ARG DISK_IMAGE_VERSION=disk-image-v1
 
