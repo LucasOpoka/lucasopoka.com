@@ -1,0 +1,11 @@
+# Local dev only — mirrors edge/conf.d/*.caddy but with a self-issued local
+# certificate instead of Let's Encrypt, so `docker compose -f docker-compose.local.yml up`
+# gives you the same curl/browser/HTTPS behavior as production without any DNS or certs.
+:80 {
+	reverse_proxy web:8080
+}
+
+:443 {
+	tls internal
+	reverse_proxy web:8080
+}

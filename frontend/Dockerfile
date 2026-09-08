@@ -1,6 +1,6 @@
 
 # Build stage
-FROM node:24-alpine as build
+FROM node:24-alpine AS build
 
 WORKDIR /app
 
@@ -17,20 +17,15 @@ COPY frontend_react/ .
 RUN npm run build
 
 # Production stage
-FROM nginx:alpine
+FROM caddy:2-alpine
 
 # Copy built assets from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist /srv/dist
 
 # Copy frontend_txt directory for curl user agents
-COPY frontend_txt /usr/share/nginx/txt
+COPY frontend_txt /srv/txt
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy Caddy configuration
+COPY Caddyfile /etc/caddy/Caddyfile
 
-# Create SSL directory (certificates will be mounted as volumes)
-RUN mkdir -p /etc/nginx/ssl
-
-EXPOSE 80 443
-
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 8080

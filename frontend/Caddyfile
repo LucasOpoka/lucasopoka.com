@@ -1,0 +1,35 @@
+:8080 {
+	# Health check for deploy.sh — checked before/after every deploy.
+	handle /healthz {
+		respond "OK" 200
+	}
+
+	# curl gets the plain-text version, regardless of scheme.
+	@curl {
+		header_regexp User-Agent ^curl
+	}
+	handle @curl {
+		root * /srv/txt
+		try_files {path} /home
+		file_server
+	}
+
+	# The edge proxy always forwards plain HTTP internally and sets X-Forwarded-Proto
+	# to the scheme the visitor actually used. Browsers that arrived over plain HTTP
+	# get redirected to HTTPS; browsers that already used HTTPS don't loop.
+	@insecure {
+		header X-Forwarded-Proto http
+	}
+	handle @insecure {
+		redir https://{host}{uri} permanent
+	}
+
+	# Everything else: the React SPA.
+	handle {
+		root * /srv/dist
+		try_files {path} /index.html
+		file_server
+		header Cross-Origin-Embedder-Policy "require-corp"
+		header Cross-Origin-Opener-Policy "same-origin"
+	}
+}

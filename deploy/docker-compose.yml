@@ -1,0 +1,27 @@
+services:
+  web:
+    image: ghcr.io/lucasopoka/lucasopoka.com:${IMAGE_TAG:?}
+    container_name: ${CONTAINER_NAME:?}
+    restart: unless-stopped
+    networks:
+      - edge
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+
+networks:
+  edge:
+    external: true
+    name: edge

@@ -1,0 +1,27 @@
+name: lucasopoka-local
+
+services:
+  web:
+    build:
+      context: frontend
+    networks:
+      - local-edge
+
+  edge:
+    image: caddy:2-alpine
+    depends_on:
+      - web
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./Caddyfile.local:/etc/caddy/Caddyfile:ro
+      - caddy_local_data:/data
+    networks:
+      - local-edge
+
+networks:
+  local-edge:
+
+volumes:
+  caddy_local_data:

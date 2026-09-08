@@ -45,6 +45,9 @@ coverage/
 # ESLint cache
 .eslintcache
 
-# Server/deployment files
-lucasopoka-server/
+# Legacy local self-signed certs (pre-Caddy) — safe to delete once confirmed unused
 ssl/
+
+# Local-only tooling/notes — not meant for the public repo
+CLAUDE.md
+CI-CD-PLAYBOOK.md
