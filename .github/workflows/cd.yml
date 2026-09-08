@@ -56,6 +56,5 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           fingerprint: ${{ secrets.DEPLOY_HOST_FINGERPRINT }}
           envs: DEPLOY_ENV
-          script_stop: true
           script: |
             /opt/lucasopoka/${DEPLOY_ENV}/deploy.sh ${{ needs.image.outputs.tag }}
