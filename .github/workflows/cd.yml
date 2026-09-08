@@ -44,6 +44,8 @@ jobs:
     needs: image
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+    env:
+      DEPLOY_ENV: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
     steps:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
@@ -53,9 +55,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           fingerprint: ${{ secrets.DEPLOY_HOST_FINGERPRINT }}
-          # Resolved to a literal string by GitHub here (not a runtime shell variable) so the
-          # SSH action sends exactly one command — appleboy/ssh-action's `envs:` input instead
-          # sends a separate `export ...` command first, which the deploy-wrapper.sh forced
-          # command on the VPS correctly rejects as an unrecognized shape.
+          envs: DEPLOY_ENV
+          script_stop: true
           script: |
-            /opt/lucasopoka/${{ github.ref_name == 'main' && 'production' || 'staging' }}/deploy.sh ${{ needs.image.outputs.tag }}
+            /opt/lucasopoka/${DEPLOY_ENV}/deploy.sh ${{ needs.image.outputs.tag }}

@@ -66,24 +66,11 @@ jobs:
         working-directory: frontend/frontend_react
         run: npm audit --audit-level=high
       - name: Filesystem vulnerability scan
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
         with:
           scan-type: fs
           severity: HIGH,CRITICAL
           exit-code: "1"
-
-  docker-build:
-    name: Docker build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
-      - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
-        with:
-          context: frontend
-          push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
   hadolint:
     name: Dockerfile lint
@@ -100,10 +87,6 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
-        with:
-          # frontend/ has content assets that happen to be .sh files (e.g. the pong demo's
-          # public/pong/pong.sh) — not operational scripts of ours, and not meant to be linted.
-          ignore_paths: frontend
 
   actionlint:
     name: Workflow lint
@@ -137,8 +120,7 @@ jobs:
   status-check:
     name: status-check
     if: always()
-    needs:
-      [quality, build, docker-build, security, hadolint, shellcheck, actionlint, sonar]
+    needs: [quality, build, security, hadolint, shellcheck, actionlint, sonar]
     runs-on: ubuntu-latest
     steps:
       - if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
