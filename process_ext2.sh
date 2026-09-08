@@ -8,9 +8,7 @@ set -e  # Exit on any error
 EXT2_IMAGE="disk-images/debian_mini_20230519_5022088024.ext2"
 PUBLIC_DIR="frontend/frontend_react/public"
 MOUNT_POINT="/tmp/ext2_mount"
-CHUNK_SIZE="10M"
 OUTPUT_DIR="frontend/frontend_react/public/disk-images"
-MANIFEST_FILE="frontend/frontend_react/public/disk-images/manifest.txt"
 
 # Colors for output
 RED='\033[0;31m'
@@ -61,7 +59,7 @@ mkdir -p "$OUTPUT_DIR"
 # Empty the output directory if it already exists and has content
 if [[ -d "$OUTPUT_DIR" ]] && [[ "$(ls -A "$OUTPUT_DIR" 2>/dev/null)" ]]; then
     echo_info "Emptying existing disk-images directory..."
-    rm -rf "$OUTPUT_DIR"/*
+    rm -rf "${OUTPUT_DIR:?}"/*
 fi
 
 # Create a working copy of the ext2 image
@@ -147,7 +145,7 @@ echo_info "Original image backed up as: ${EXT2_IMAGE}.backup"
 # Display chunk count
 echo_info "Chunk files created:"
 if [[ -d "frontend/frontend_react/public/disk-images" ]]; then
-    CHUNK_COUNT=$(ls "frontend/frontend_react/public/disk-images"/*.c* 2>/dev/null | wc -l)
+    CHUNK_COUNT=$(find "frontend/frontend_react/public/disk-images" -maxdepth 1 -name '*.c*' | wc -l)
     echo_info "Number of chunk files: $CHUNK_COUNT"
 else
     echo_error "public/disk-images directory not found"

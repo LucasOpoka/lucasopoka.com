@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+# This repo doesn't want Claude Code's default attribution trailer in commit
+# messages — strip it here so it can never actually land, regardless of what
+# produced the message.
+
+msg_file="$1"
+
+sed -i '/^Co-Authored-By:.*\(Claude\|anthropic\)/Id; /^Claude-Session:/d' "$msg_file"
+
+# Collapse any resulting trailing blank lines left behind.
+sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$msg_file"

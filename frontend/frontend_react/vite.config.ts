@@ -1,20 +1,20 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
-    target: ["esnext", "chrome91", "firefox90", "safari15"],
+    target: ['esnext', 'chrome91', 'firefox90', 'safari15'],
     outDir: 'dist',
-    assetsDir: 'assets'
+    assetsDir: 'assets',
   },
   esbuild: {
-    target: "esnext"
+    target: 'esnext',
   },
   optimizeDeps: {
     esbuildOptions: {
-      target: "esnext"
-    }
+      target: 'esnext',
+    },
   },
   plugins: [react()],
   server: {
@@ -23,14 +23,20 @@ export default defineConfig({
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp',
-      'Cross-Origin-Resource-Policy': 'cross-origin'
-    }
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+    },
   },
   resolve: {
     alias: {
-      '@': '/src'
-    }
-  }
+      '@': '/src',
+    },
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+    },
+  },
 })
-
-

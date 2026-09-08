@@ -4,7 +4,6 @@ import PongView from '../views/PongView'
 import ContactView from '../views/ContactView'
 
 function AppRoutes() {
-
   return (
     <Routes>
       <Route path="/" element={<HomeView />} />

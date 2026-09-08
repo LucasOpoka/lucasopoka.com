@@ -1,51 +1,49 @@
-import { useEffect } from 'react';
-import { useXTerm } from 'react-xtermjs';
-import { Box } from '@mui/material';
-import '@xterm/xterm/css/xterm.css';
-import { blockCacheAtom } from '../WebVmAtoms';
-import WebVmFooter from './WebVmFooter';
-import { useViewNavigation } from '../hooks/useViewNavigation';
-import { initTerminal } from './WebVmInitTerminal.tsx';
-import { initCheerpX } from './WebVmInitCheerpX.ts';
-import { getDefaultStore } from 'jotai';
+import { useEffect } from 'react'
+import { useXTerm } from 'react-xtermjs'
+import { Box } from '@mui/material'
+import '@xterm/xterm/css/xterm.css'
+import { blockCacheAtom } from '../WebVmAtoms'
+import WebVmFooter from './WebVmFooter'
+import { useViewNavigation } from '../hooks/useViewNavigation'
+import { initTerminal } from './WebVmInitTerminal.tsx'
+import { initCheerpX } from './WebVmInitCheerpX.ts'
+import { getDefaultStore } from 'jotai'
 
-export const TERMINAL_WIDTH = 800;
-export const TERMINAL_HEIGHT = 427;
+export const TERMINAL_WIDTH = 800
+export const TERMINAL_HEIGHT = 427
 
 export default function WebVM() {
-
   // Create terminal instance
-  const { instance: term, ref: termRef } = useXTerm();
+  const { instance: term, ref: termRef } = useXTerm()
 
   // Use the view navigation hook - only when CheerpX is ready
-  useViewNavigation(term);
+  useViewNavigation(term)
 
   // Initialize terminal and virtual machine
   useEffect(() => {
     const initializeWebVM = async () => {
-      initTerminal(term);
-      await initCheerpX(term);
-    };
+      initTerminal(term)
+      await initCheerpX(term)
+    }
 
-    initializeWebVM();
-  }, [term]);
-
+    initializeWebVM()
+  }, [term])
 
   async function handleReset(): Promise<void> {
-    const blockCache = getDefaultStore().get(blockCacheAtom);
-    if (blockCache === null) return;
-    await blockCache.reset();
-    location.reload();
+    const blockCache = getDefaultStore().get(blockCacheAtom)
+    if (blockCache === null) return
+    await blockCache.reset()
+    location.reload()
   }
 
   // Cleanup
   useEffect(() => {
     return () => {
       if (term) {
-        term.dispose();
+        term.dispose()
       }
-    };
-  }, []);
+    }
+  }, [])
 
   return (
     <Box>
@@ -77,5 +75,5 @@ export default function WebVM() {
       />
       <WebVmFooter onReset={handleReset} />
     </Box>
-  );
+  )
 }

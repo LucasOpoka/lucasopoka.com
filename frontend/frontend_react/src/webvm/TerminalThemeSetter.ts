@@ -21,11 +21,11 @@ export function TerminalThemeSetter(instance: Terminal): void {
     brightBlue: '#4040ff',
     brightMagenta: '#ff40ff',
     brightCyan: '#40ffff',
-    brightWhite: '#ffffff'
+    brightWhite: '#ffffff',
   }
   instance.options.fontSize = 13
   instance.options.fontFamily = '"Fira Mono", monospace'
-  
+
   // Cursor configuration
   instance.options.cursorBlink = true
   instance.options.cursorStyle = 'block'

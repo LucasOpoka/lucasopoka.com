@@ -1,10 +1,7 @@
 import NavigationBar from './NavigationBar'
 
-
 function Header() {
-  return (
-    <NavigationBar />
-  )
+  return <NavigationBar />
 }
 
 export default Header

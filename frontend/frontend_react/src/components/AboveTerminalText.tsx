@@ -1,13 +1,13 @@
-import { Typography } from "@mui/material";
-import type { ReactNode } from "react";
+import { Typography } from '@mui/material'
+import type { ReactNode } from 'react'
 
 interface AboveTerminalTextProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 function AboveTerminalText({ children }: AboveTerminalTextProps) {
   return (
-    <Typography 
+    <Typography
       sx={{
         fontSize: '0.8rem',
         lineHeight: 1.3,
@@ -22,4 +22,4 @@ function AboveTerminalText({ children }: AboveTerminalTextProps) {
   )
 }
 
-export default AboveTerminalText;
+export default AboveTerminalText

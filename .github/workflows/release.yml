@@ -1,0 +1,45 @@
+name: Release
+
+# Opens (never merges) a develop -> main pull request. Merging it — a manual, reviewed step
+# protected by main's branch protection — is what actually triggers cd.yml's production deploy.
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 9 * * 1" # weekly, Monday 09:00 UTC
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open-release-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Open release PR
+        env:
+          # PRs opened with the default GITHUB_TOKEN don't trigger other workflows (GitHub's
+          # anti-recursion rule) — ci.yml would never run on this PR. RELEASE_PAT (a personal
+          # access token with repo + pull-requests scope, added in Phase E) fixes that by
+          # opening the PR as an actual user instead. Falls back to GITHUB_TOKEN so this still
+          # works (just without triggering CI on the PR itself) if that secret isn't set yet.
+          GH_TOKEN: ${{ secrets.RELEASE_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet origin/main origin/develop; then
+            CHANGELOG="$(git log origin/main..origin/develop --pretty=format:'- %s (%h)')"
+            gh pr create \
+              --base main \
+              --head develop \
+              --title "Release: promote develop to main" \
+              --body "Auto-generated release PR.
+
+          ## Changes
+          ${CHANGELOG}" \
+              --reviewer LucasOpoka \
+              || echo "PR already exists"
+          else
+            echo "No changes between develop and main — nothing to release"
+          fi

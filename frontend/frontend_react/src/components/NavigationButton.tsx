@@ -7,7 +7,6 @@ interface NavigationButtonProps {
 }
 
 function NavigationButton({ label, buttonPath }: NavigationButtonProps) {
-
   const currentLocation = useLocation()
   const navigate = useNavigate()
 
@@ -18,7 +17,7 @@ function NavigationButton({ label, buttonPath }: NavigationButtonProps) {
   }
 
   return (
-    <MuiLink 
+    <MuiLink
       onClick={handleClick}
       sx={{
         height: '100%',
@@ -28,11 +27,14 @@ function NavigationButton({ label, buttonPath }: NavigationButtonProps) {
         '&:hover': {
           backgroundColor: '#333',
         },
-        color: currentLocation.pathname === buttonPath ? 'secondary.main' : 'inherit',
+        color:
+          currentLocation.pathname === buttonPath
+            ? 'secondary.main'
+            : 'inherit',
         textDecoration: 'none',
         opacity: 1,
         pointerEvents: 'auto',
-        cursor: 'pointer'
+        cursor: 'pointer',
       }}
     >
       {label}
