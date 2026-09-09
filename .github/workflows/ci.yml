@@ -3,6 +3,9 @@ name: CI
 on:
   pull_request:
     branches: [develop, main]
+    # `labeled` is needed so attaching the `e2e` label to an already-open PR actually re-triggers
+    # this workflow — by default GitHub only fires pull_request on open/sync/reopen, not labeling.
+    types: [opened, synchronize, reopened, labeled]
 
 permissions:
   contents: read
@@ -85,6 +88,57 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  e2e:
+    name: E2E tests
+    runs-on: ubuntu-latest
+    # Required before merging into main; opt-in elsewhere via the `e2e` label — it's slow (real
+    # browser, real Docker image, the WebVM's real CDN/disk-image network dependencies) so it
+    # doesn't run on every PR by default. status-check treats a skipped job as passing, so this
+    # needs no separate branch-protection entry — being unconditional for main is what makes it
+    # a real gate there.
+    if: github.base_ref == 'main' || contains(github.event.pull_request.labels.*.name, 'e2e')
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+      - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: frontend
+          push: false
+          load: true
+          tags: lucasopoka-e2e:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Run the app container
+        run: |
+          docker run -d --name e2e-app -p 8080:8080 lucasopoka-e2e:latest
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:8080/healthz && exit 0
+            sleep 2
+          done
+          echo "App container never became healthy" >&2
+          exit 1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: frontend/frontend_react/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/frontend_react/package-lock.json
+      - working-directory: frontend/frontend_react
+        run: npm ci
+      - working-directory: frontend/frontend_react
+        run: npx playwright install --with-deps chromium
+      - working-directory: frontend/frontend_react
+        run: npx playwright test
+        env:
+          E2E_BASE_URL: http://localhost:8080
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure()
+        with:
+          name: playwright-report
+          path: frontend/frontend_react/playwright-report/
+          retention-days: 7
+      - if: always()
+        run: docker logs e2e-app || true
+
   hadolint:
     name: Dockerfile lint
     runs-on: ubuntu-latest
@@ -138,7 +192,7 @@ jobs:
     name: status-check
     if: always()
     needs:
-      [quality, build, docker-build, security, hadolint, shellcheck, actionlint, sonar]
+      [quality, build, docker-build, e2e, security, hadolint, shellcheck, actionlint, sonar]
     runs-on: ubuntu-latest
     steps:
       - if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}

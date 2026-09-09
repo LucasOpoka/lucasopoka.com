@@ -42,6 +42,11 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+
 # ESLint cache
 .eslintcache
 
