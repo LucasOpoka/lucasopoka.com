@@ -8,13 +8,8 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
   },
-  esbuild: {
+  oxc: {
     target: 'esnext',
-  },
-  optimizeDeps: {
-    esbuildOptions: {
-      target: 'esnext',
-    },
   },
   plugins: [react()],
   server: {
