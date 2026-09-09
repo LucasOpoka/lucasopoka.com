@@ -16,7 +16,7 @@ REPO="LucasOpoka/lucasopoka.com"
 SRC_DIR="$(dirname "$0")/../frontend/frontend_react/public/disk-images"
 ARCHIVE="$(mktemp -t disk-images-XXXXXX.tar.gz)"
 
-if [ ! -d "$SRC_DIR" ]; then
+if [[ ! -d "$SRC_DIR" ]]; then
   echo "No disk-images directory at $SRC_DIR — run process_ext2.sh first." >&2
   exit 1
 fi

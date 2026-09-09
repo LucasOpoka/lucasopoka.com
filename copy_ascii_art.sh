@@ -11,7 +11,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 ASCII_ART_DIR="$SCRIPT_DIR"
 
 # Check if AsciiArt directory exists
-if [ ! -d "$ASCII_ART_DIR" ]; then
+if [[ ! -d "$ASCII_ART_DIR" ]]; then
     echo "Error: AsciiArt directory not found at $ASCII_ART_DIR"
     exit 1
 fi
@@ -21,7 +21,7 @@ copy_file() {
     local source_file="$1"
     local dest_file="$2"
     
-    if [ ! -f "$source_file" ]; then
+    if [[ ! -f "$source_file" ]]; then
         echo "Warning: Source file $source_file does not exist, skipping..."
         return 1
     fi

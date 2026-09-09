@@ -6,8 +6,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
-  security-events: write # for the deployed-image Trivy scan's SARIF upload
 
 concurrency:
   group: cd-${{ github.ref }}
@@ -17,6 +15,10 @@ jobs:
   image:
     name: Build & push image
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write # for the deployed-image Trivy scan's SARIF upload
     outputs:
       tag: ${{ steps.meta.outputs.tag }}
     steps:
