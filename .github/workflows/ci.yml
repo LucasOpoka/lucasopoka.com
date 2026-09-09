@@ -125,12 +125,12 @@ jobs:
   e2e:
     name: E2E tests
     runs-on: ubuntu-latest
-    # Required before merging into main; opt-in elsewhere via the `e2e` label — it's slow (real
-    # browser, real Docker image, the WebVM's real CDN/disk-image network dependencies) so it
-    # doesn't run on every PR by default. status-check treats a skipped job as passing, so this
-    # needs no separate branch-protection entry — being unconditional for main is what makes it
-    # a real gate there.
-    if: github.base_ref == 'main' || contains(github.event.pull_request.labels.*.name, 'e2e')
+    # Always runs on a merge (push to develop/main); opt-in on a PR via the `e2e` label — it's
+    # slow (real browser, real Docker image, the WebVM's real CDN/disk-image network
+    # dependencies) so it doesn't run on every PR push by default. status-check treats a
+    # skipped job as passing either way. Note this makes e2e a post-merge check, not a
+    # pre-merge gate: it runs in parallel with cd.yml's deploy, not before it.
+    if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'e2e')
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
