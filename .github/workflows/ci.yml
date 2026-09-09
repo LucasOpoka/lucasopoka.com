@@ -6,18 +6,30 @@ on:
     # `labeled` is needed so attaching the `e2e` label to an already-open PR actually re-triggers
     # this workflow — by default GitHub only fires pull_request on open/sync/reopen, not labeling.
     types: [opened, synchronize, reopened, labeled]
+  # So the `sonar` job also analyzes the actual post-merge state of develop/main, not just PRs —
+  # SonarCloud has no other way to keep a branch's own dashboard current now that Automatic
+  # Analysis is off. Every other job besides `sonar` and `e2e` has its own `if:` restricting it
+  # to pull_request only — see each job's own comment for why.
+  push:
+    branches: [develop, main]
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number }}
+  # github.event.pull_request.number doesn't exist on a push event — falling back to github.ref
+  # keeps push-triggered runs on different branches from colliding into the same group and
+  # cancelling each other out.
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   quality:
     name: Lint, format, types, tests
     runs-on: ubuntu-latest
+    # PR-only: on push (merge), the exact same content already passed this on the PR — rerunning
+    # here would only ever re-confirm it, at full cost, for no new information.
+    if: github.event_name == 'pull_request'
     defaults:
       run:
         working-directory: frontend/frontend_react
@@ -41,6 +53,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' # see quality's comment
     defaults:
       run:
         working-directory: frontend/frontend_react
@@ -57,6 +70,7 @@ jobs:
   security:
     name: Security scan
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' # see quality's comment
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -78,6 +92,7 @@ jobs:
   docker-build:
     name: Docker build & image scan
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' # see quality's comment
     permissions:
       contents: read
       security-events: write # needed to upload the image scan's SARIF results below
@@ -117,12 +132,17 @@ jobs:
   e2e:
     name: E2E tests
     runs-on: ubuntu-latest
-    # Required before merging into main; opt-in elsewhere via the `e2e` label — it's slow (real
-    # browser, real Docker image, the WebVM's real CDN/disk-image network dependencies) so it
-    # doesn't run on every PR by default. status-check treats a skipped job as passing, so this
-    # needs no separate branch-protection entry — being unconditional for main is what makes it
-    # a real gate there.
-    if: github.base_ref == 'main' || contains(github.event.pull_request.labels.*.name, 'e2e')
+    # main: required pre-merge gate (any PR targeting main), never reruns on push to main since
+    # that would just recheck the exact commit that already passed to get merged.
+    # develop: never a pre-merge gate — instead runs post-merge, on every push to develop, purely
+    # informational (see status-check: a failure here doesn't block or roll back anything, and
+    # ci.yml/cd.yml are independent workflows with no dependency between them). Opt-in pre-merge
+    # via the `e2e` label if you want it to run before merging into develop too.
+    # Slow (real browser, real Docker image, the WebVM's real CDN/disk-image network
+    # dependencies) is why it isn't unconditional everywhere.
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
+      (github.event_name == 'pull_request' && (github.base_ref == 'main' || contains(github.event.pull_request.labels.*.name, 'e2e')))
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
@@ -169,6 +189,7 @@ jobs:
   hadolint:
     name: Dockerfile lint
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' # see quality's comment
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
@@ -178,6 +199,7 @@ jobs:
   shellcheck:
     name: Shell script lint
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' # see quality's comment
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
@@ -189,6 +211,7 @@ jobs:
   actionlint:
     name: Workflow lint
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' # see quality's comment
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
@@ -197,11 +220,18 @@ jobs:
     name: SonarQube Cloud
     needs: quality
     runs-on: ubuntu-latest
+    # quality is skipped (not "succeeded") on push, and a job's default condition requires all
+    # of `needs` to have succeeded — without this, sonar would silently stop running on push
+    # entirely. !failure() && !cancelled() still blocks this if quality actually fails on a PR.
+    if: ${{ !failure() && !cancelled() }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+      # Only exists when `quality` actually ran (PRs) — on push it's skipped, so sonar just runs
+      # without fresh coverage data rather than failing to find the artifact.
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: github.event_name == 'pull_request'
         with:
           name: coverage
           path: frontend/frontend_react/coverage
@@ -224,3 +254,22 @@ jobs:
     steps:
       - if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
         run: exit 1
+
+  # Unlike a failed PR check (visible right there in the PR, blocking merge), a failure here runs
+  # on already-merged code with nothing else watching it — cd.yml has its own notify-on-failure
+  # for deploy failures, but a broken e2e/sonar/etc. on develop or main would otherwise be silent
+  # until someone happens to check the Actions tab.
+  notify-on-failure:
+    name: Notify on failure
+    needs: status-check
+    if: failure() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send ntfy notification
+        run: |
+          curl -sS \
+            -H "Title: lucasopoka.com CI failed after merge (${{ github.ref_name }})" \
+            -H "Priority: high" \
+            -H "Tags: rotating_light" \
+            -d "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            "https://ntfy.sh/${{ secrets.NTFY_TOPIC }}"
