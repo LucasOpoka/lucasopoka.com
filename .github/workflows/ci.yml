@@ -6,12 +6,20 @@ on:
     # `labeled` is needed so attaching the `e2e` label to an already-open PR actually re-triggers
     # this workflow — by default GitHub only fires pull_request on open/sync/reopen, not labeling.
     types: [opened, synchronize, reopened, labeled]
+  # So the `sonar` job also analyzes the actual post-merge state of develop/main, not just PRs —
+  # SonarCloud has no other way to keep a branch's own dashboard current now that Automatic
+  # Analysis is off. `e2e` stays skipped here: its `if:` only matches pull_request context.
+  push:
+    branches: [develop, main]
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number }}
+  # github.event.pull_request.number doesn't exist on a push event — falling back to github.ref
+  # keeps push-triggered runs on different branches from colliding into the same group and
+  # cancelling each other out.
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
