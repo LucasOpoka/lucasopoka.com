@@ -6,7 +6,7 @@
 # every app source code change.
 FROM alpine:3.24 AS disk-images
 
-ARG DISK_IMAGE_VERSION=disk-image-v1
+ARG DISK_IMAGE_VERSION=disk-image-v2
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache curl && \

@@ -14,20 +14,25 @@ set -euo pipefail
 VERSION="${1:?Usage: publish-disk-image.sh <version>, e.g. disk-image-v2}"
 REPO="LucasOpoka/lucasopoka.com"
 SRC_DIR="$(dirname "$0")/../frontend/frontend_react/public/disk-images"
-ARCHIVE="$(mktemp -t disk-images-XXXXXX.tar.gz)"
+# A real directory + fixed filename, not mktemp's randomized-suffix pattern — frontend/Dockerfile
+# fetches this exact name (disk-images.tar.gz), and relying on `gh release create`'s asset#label
+# syntax to rename it on upload turned out not to be reliable (it silently kept the random local
+# filename on one run, producing a 404 for the Dockerfile's fixed URL).
+ARCHIVE_DIR="$(mktemp -d)"
+ARCHIVE="$ARCHIVE_DIR/disk-images.tar.gz"
 
 if [[ ! -d "$SRC_DIR" ]]; then
   echo "No disk-images directory at $SRC_DIR — run process_ext2.sh first." >&2
   exit 1
 fi
 
-trap 'rm -f "$ARCHIVE"' EXIT
+trap 'rm -rf "$ARCHIVE_DIR"' EXIT
 
 echo "Archiving $SRC_DIR..."
 tar -czf "$ARCHIVE" -C "$SRC_DIR" .
 echo "Archive size: $(du -h "$ARCHIVE" | cut -f1)"
 
-gh release create "$VERSION" "$ARCHIVE#disk-images.tar.gz" \
+gh release create "$VERSION" "$ARCHIVE" \
   --repo "$REPO" \
   --title "WebVM disk image assets ($VERSION)" \
   --notes "Chunked ext2 disk image for the WebVM feature. Fetched by frontend/Dockerfile's disk-images build stage."

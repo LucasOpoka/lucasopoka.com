@@ -102,9 +102,12 @@ cp -r "$PUBLIC_DIR/home" "$MOUNT_POINT/home/user/"
 cp -r "$PUBLIC_DIR/contact" "$MOUNT_POINT/home/user/"
 cp -r "$PUBLIC_DIR/pong" "$MOUNT_POINT/home/user/"
 
-# Set proper permissions
+# Set proper permissions on the directories just copied in — scoped to exactly those, not the
+# whole mount point, since a broader chmod -R here previously reset /dev's device node
+# permissions (e.g. /dev/null from crw-rw-rw- to crwxr-xr-x), breaking them for the VM's
+# unprivileged user account.
 echo_info "Setting permissions..."
-chmod -R 755 "$MOUNT_POINT"
+chmod -R 755 "$MOUNT_POINT/home/user/home" "$MOUNT_POINT/home/user/contact" "$MOUNT_POINT/home/user/pong"
 
 # Sync filesystem to ensure all changes are written
 echo_info "Syncing filesystem..."
