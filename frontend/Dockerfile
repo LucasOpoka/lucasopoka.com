@@ -21,7 +21,7 @@ RUN apk add --no-cache curl && \
 # glibc — confirmed by reproducing the failure in a plain node:24-alpine container and it
 # passing in node:24. Doesn't affect the shipped image size, since only this build stage uses
 # it; the final stage is still caddy:2-alpine.
-FROM node:24 AS build
+FROM node:26 AS build
 
 WORKDIR /app
 
