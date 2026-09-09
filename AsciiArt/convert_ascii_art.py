@@ -69,9 +69,9 @@ def final_conversion(content):
     Convert escape sequences and fix backslash issues.
     Now handles constants that have the [ part but need the escape character.
     """
-    # Convert [ to \033[ (add escape character to ANSI codes)
+    # Convert [ to \x1b[ (add escape character to ANSI codes)
     # This handles cases where constants are like [0m, [34m, etc.
-    content = re.sub(r'(?<!\033)\[', '\033[', content)
+    content = re.sub(r'(?<!\x1b)\[', '\x1b[', content)
 
     # Fix double backslashes - convert \\ to \ without breaking \033[
     # Replace \\ with \ but only when it's not part of an escape sequence

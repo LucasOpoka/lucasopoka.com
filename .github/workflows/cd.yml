@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 concurrency:
   group: cd-${{ github.ref }}
@@ -16,6 +15,10 @@ jobs:
   image:
     name: Build & push image
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write # for the deployed-image Trivy scan's SARIF upload
     outputs:
       tag: ${{ steps.meta.outputs.tag }}
     steps:
@@ -38,6 +41,24 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: true
+      # Non-blocking, same reasoning as ci.yml's PR-time image scan: base-image CVEs aren't
+      # something a deploy can fix. This one scans the exact image that's about to ship, and
+      # a separate weekly workflow (image-scan-scheduled.yml) re-scans it on a schedule too, so
+      # newly-disclosed CVEs against an already-deployed, unchanged image still surface.
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: ghcr.io/lucasopoka/lucasopoka.com:${{ steps.meta.outputs.tag }}
+          severity: HIGH,CRITICAL
+          format: sarif
+          output: trivy-image-results.sarif
+      - name: Upload image scan results
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        if: always()
+        with:
+          sarif_file: trivy-image-results.sarif
+          category: trivy-image-${{ github.ref_name }}
 
   deploy:
     name: Deploy to ${{ github.ref_name == 'main' && 'production' || 'staging' }}
@@ -59,3 +80,44 @@ jobs:
           # command on the VPS correctly rejects as an unrecognized shape.
           script: |
             /opt/lucasopoka/${{ github.ref_name == 'main' && 'production' || 'staging' }}/deploy.sh ${{ needs.image.outputs.tag }}
+
+  smoke-test:
+    name: Post-deploy smoke test
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      # Unlike deploy.sh's health check (which only confirms the container itself is up),
+      # this hits the real public URL from outside the VPS entirely — proving DNS, the edge
+      # Caddy proxy, and its Let's Encrypt certificate are all actually working end to end.
+      # A plain `curl` without `-k` already fails on an invalid/expired certificate, so a pass
+      # here implicitly confirms TLS is fine too.
+      - name: Verify the live site
+        env:
+          DOMAIN: ${{ github.ref_name == 'main' && 'lucasopoka.com' || 'staging.lucasopoka.com' }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 5); do
+            if curl -fsS --max-time 15 "https://${DOMAIN}/healthz" | grep -qx OK; then
+              echo "https://${DOMAIN}/healthz OK on attempt $attempt"
+              break
+            fi
+            echo "Not ready yet (attempt $attempt/5)"
+            sleep 5
+          done
+          curl -fsS --max-time 15 -A "Mozilla/5.0" "https://${DOMAIN}/" | grep -q "lucasopoka.com"
+          echo "Smoke test passed for https://${DOMAIN}"
+
+  notify-on-failure:
+    name: Notify on failure
+    needs: [image, deploy, smoke-test]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send ntfy notification
+        run: |
+          curl -sS \
+            -H "Title: lucasopoka.com CD failed (${{ github.ref_name }})" \
+            -H "Priority: high" \
+            -H "Tags: rotating_light" \
+            -d "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            "https://ntfy.sh/${{ secrets.NTFY_TOPIC }}"

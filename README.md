@@ -34,8 +34,12 @@ different directories):
 ```bash
 git config core.hooksPath .husky
 ```
-This wires up a pre-commit hook that runs `lint-staged` (eslint + prettier on staged files only).
-It's a convenience — CI is the actual authority and runs everything regardless.
+This wires up a pre-commit hook that runs `lint-staged` (eslint + prettier on staged files only),
+plus a commit-msg hook that strips any Claude Code attribution trailer from commit messages.
+
+`gh` has no equivalent local hook point for pull requests, so `./gh-pr-safe.sh` fills that gap —
+use it in place of `gh pr create`/`gh pr edit` to strip the same attribution footer from PR
+descriptions before they reach GitHub (e.g. `./gh-pr-safe.sh create --title "..." --body "..."`).
 
 ## Docker
 

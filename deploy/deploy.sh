@@ -28,7 +28,7 @@ docker compose up -d --no-deps web
 CONTAINER="$(docker compose ps -q web)"
 for i in $(seq 1 30); do
   status="$(docker inspect --format='{{.State.Health.Status}}' "$CONTAINER" 2>/dev/null || echo starting)"
-  if [ "$status" = "healthy" ]; then
+  if [[ "$status" == "healthy" ]]; then
     echo "Healthy on attempt $i (tag ${TAG})"
     docker image prune -f --filter 'until=168h' >/dev/null
     exit 0
@@ -37,7 +37,7 @@ for i in $(seq 1 30); do
 done
 
 echo "Health check failed for tag ${TAG} — rolling back to ${PREV_TAG:-none}" >&2
-if [ -n "${PREV_TAG:-}" ]; then
+if [[ -n "${PREV_TAG:-}" ]]; then
   set_tag "$PREV_TAG"
   docker compose up -d --no-deps web
 fi
