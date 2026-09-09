@@ -29,6 +29,16 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // e2e/ holds Playwright specs, run by `npm run e2e` — Vitest's default glob would otherwise
+    // also pick them up and try (and fail) to run them with its own test runner. Setting
+    // `exclude` replaces Vitest's own default list, so it's repeated here alongside e2e/.
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/e2e/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/{vite,vitest}.config.*',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
