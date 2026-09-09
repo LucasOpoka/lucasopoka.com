@@ -48,8 +48,10 @@ FROM caddy:2-alpine
 
 # The base image has no non-root user built in; create one so this container doesn't run as
 # root. Port 8080 doesn't need root to bind, and this app is served entirely from static files
-# plus a config file it never writes to, so it needs no elevated privileges at runtime.
-RUN addgroup -S caddy && adduser -S caddy -G caddy
+# plus a config file it never writes to, so it needs no elevated privileges at runtime. Explicit
+# numeric ids (rather than relying on adduser's default allocation) so USER below can reference
+# a numeric id directly — a name isn't guaranteed resolvable by every host system.
+RUN addgroup -g 1000 -S caddy && adduser -u 1000 -S caddy -G caddy
 
 # Copy built assets from build stage
 COPY --from=build --chown=caddy:caddy /app/dist /srv/dist
@@ -64,6 +66,6 @@ COPY --chown=caddy:caddy Caddyfile /etc/caddy/Caddyfile
 # edge proxy handles TLS, not this container), but Caddy still wants to write there on startup.
 RUN mkdir -p /data /config && chown -R caddy:caddy /data /config
 
-USER caddy
+USER 1000:1000
 
 EXPOSE 8080
