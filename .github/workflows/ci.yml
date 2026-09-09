@@ -111,8 +111,9 @@ jobs:
       - name: Run the app container
         run: |
           docker run -d --name e2e-app -p 8080:8080 lucasopoka-e2e:latest
-          for i in $(seq 1 30); do
+          for attempt in $(seq 1 30); do
             curl -fsS http://localhost:8080/healthz && exit 0
+            echo "Not healthy yet (attempt $attempt/30)"
             sleep 2
           done
           echo "App container never became healthy" >&2
