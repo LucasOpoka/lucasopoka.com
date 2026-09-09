@@ -76,8 +76,11 @@ jobs:
           exit-code: "1"
 
   docker-build:
-    name: Docker build
+    name: Docker build & image scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # needed to upload the image scan's SARIF results below
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
@@ -85,8 +88,31 @@ jobs:
         with:
           context: frontend
           push: false
+          load: true
+          tags: lucasopoka-ci:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      # Distinct from the "security" job's fs scan (that one only sees package-lock.json, i.e.
+      # our own JS deps) — this scans the actual built image, catching CVEs in the base OS layer
+      # (caddy:2-alpine's own packages) the fs scan has no visibility into at all. Deliberately
+      # non-blocking: base-image CVEs aren't fixable by changing this repo's own code — they only
+      # get resolved when Caddy ships a patched build, which Dependabot's docker-ecosystem watch
+      # already tracks. Tracked visibly in the Security tab instead of failing every PR over
+      # something no PR could fix.
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: lucasopoka-ci:latest
+          severity: HIGH,CRITICAL
+          format: sarif
+          output: trivy-image-results.sarif
+      - name: Upload image scan results
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        if: always()
+        with:
+          sarif_file: trivy-image-results.sarif
+          category: trivy-image
 
   e2e:
     name: E2E tests
