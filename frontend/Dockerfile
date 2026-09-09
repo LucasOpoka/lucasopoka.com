@@ -10,7 +10,7 @@ ARG DISK_IMAGE_VERSION=disk-image-v1
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache curl && \
-    curl -fsSL -o /tmp/disk-images.tar.gz \
+    curl -fsSL --proto '=https' --tlsv1.2 -o /tmp/disk-images.tar.gz \
       "https://github.com/LucasOpoka/lucasopoka.com/releases/download/${DISK_IMAGE_VERSION}/disk-images.tar.gz" && \
     mkdir -p /disk-images && \
     tar -xzf /tmp/disk-images.tar.gz -C /disk-images && \
@@ -28,8 +28,11 @@ WORKDIR /app
 # Copy package files from frontend_react directory
 COPY frontend_react/package*.json ./
 
-# Install all dependencies (including dev dependencies for build)
-RUN npm ci
+# Install all dependencies (including dev dependencies for build). --ignore-scripts blocks
+# arbitrary lifecycle scripts from a compromised/malicious dependency running at install time —
+# confirmed no dependency here actually needs its install scripts to function (esbuild's
+# platform binary still resolves fine via optionalDependencies without it).
+RUN npm ci --ignore-scripts
 
 # Copy source code from frontend_react directory
 COPY frontend_react/ .
@@ -43,13 +46,26 @@ RUN npm run build
 # Production stage
 FROM caddy:2-alpine
 
+# The base image has no non-root user built in; create one so this container doesn't run as
+# root. Port 8080 doesn't need root to bind, and this app is served entirely from static files
+# plus a config file it never writes to, so it needs no elevated privileges at runtime. Explicit
+# numeric ids (rather than relying on adduser's default allocation) so USER below can reference
+# a numeric id directly — a name isn't guaranteed resolvable by every host system.
+RUN addgroup -g 1000 -S caddy && adduser -u 1000 -S caddy -G caddy
+
 # Copy built assets from build stage
-COPY --from=build /app/dist /srv/dist
+COPY --from=build --chown=caddy:caddy /app/dist /srv/dist
 
 # Copy frontend_txt directory for curl user agents
-COPY frontend_txt /srv/txt
+COPY --chown=caddy:caddy frontend_txt /srv/txt
 
 # Copy Caddy configuration
-COPY Caddyfile /etc/caddy/Caddyfile
+COPY --chown=caddy:caddy Caddyfile /etc/caddy/Caddyfile
+
+# Caddy's default /data and /config dirs are for TLS state/autosave this app never uses (the
+# edge proxy handles TLS, not this container), but Caddy still wants to write there on startup.
+RUN mkdir -p /data /config && chown -R caddy:caddy /data /config
+
+USER 1000:1000
 
 EXPOSE 8080
