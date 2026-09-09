@@ -124,8 +124,8 @@ jobs:
         with:
           name: coverage
           path: frontend/frontend_react/coverage
-      # SONAR_TOKEN isn't wired up until the SonarCloud project is registered (see the plan's
-      # Phase E) — skip gracefully rather than permanently failing CI until then.
+      # SONAR_TOKEN is registered as of the SonarCloud project setup — this check just keeps
+      # the job from permanently failing if the secret is ever removed/rotated out.
       - name: Check SonarCloud is configured
         id: check
         run: echo "configured=${{ secrets.SONAR_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
