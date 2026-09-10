@@ -1,3 +1,10 @@
 body {
-  background-color: #121212;
+  margin: 0;
+  /* --page-bg is set in index.html - a gradient matching the terminal's
+     black above the footer's page background for the webvm-frame route,
+     unset (falls back to solid page background) everywhere else.
+     `background`, not `background-color`, since the webvm-frame value is a
+     gradient. The fallback below is a build-time token (see vite.config.ts)
+     so it can't drift from PAGE_BACKGROUND in terminalLayout.ts. */
+  background: var(--page-bg, __PAGE_BACKGROUND__);
 }

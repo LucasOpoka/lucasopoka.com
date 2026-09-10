@@ -12,8 +12,7 @@ function NavigationButton({ label, buttonPath }: NavigationButtonProps) {
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    navigate(buttonPath, { replace: true })
-    location.reload()
+    navigate(buttonPath)
   }
 
   return (

@@ -6,6 +6,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>lucasopoka.com</title>
 
+    <!--
+      Inlined so it applies before the external stylesheet loads - this page
+      is also loaded fresh inside an <iframe> on every WebVM view change
+      (see WebVmEmbed/WebVmFrame), so without this the iframe flashes the
+      browser's default white background for as long as styles.css takes to
+      fetch. The webvm-frame route splits its background into the terminal's
+      own black (matching WebVM.tsx/TerminalThemeSetter) for the terminal's
+      exact height, then the site's background below it (matching the
+      CPU/Disk footer's background once it mounts) - not solid black, or the
+      loading placeholder is taller than the terminal it's standing in for.
+      The placeholder tokens below are filled in at build time from
+      src/webvm/terminalLayout.ts (see vite.config.ts) - the one place
+      index.html can't just import - so they can't drift out of sync.
+      (Written without the token syntax here on purpose: the build-time
+      replacement runs over this whole file, so spelling a token out in
+      prose would get it replaced too.)
+    -->
+    <style>
+      body {
+        margin: 0;
+        background: var(--page-bg, __PAGE_BACKGROUND__);
+      }
+    </style>
+    <script>
+      if (location.pathname === '/webvm-frame') {
+        document.documentElement.style.setProperty(
+          '--page-bg',
+          'linear-gradient(to bottom, __TERMINAL_BLACK__ 0, __TERMINAL_BLACK__ __TERMINAL_HEIGHT__px, __PAGE_BACKGROUND__ __TERMINAL_HEIGHT__px, __PAGE_BACKGROUND__ 100%)',
+        )
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

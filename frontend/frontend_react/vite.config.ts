@@ -1,5 +1,41 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig, type Plugin } from 'vitest/config'
 import react from '@vitejs/plugin-react'
+import {
+  TERMINAL_HEIGHT,
+  TERMINAL_BLACK,
+  PAGE_BACKGROUND,
+} from './src/webvm/terminalLayout.ts'
+
+// index.html and styles.css can't import terminalLayout.ts (index.html runs
+// before any JS bundle; styles.css is plain CSS) - so their __TOKEN__
+// placeholders are filled in here instead, the only way to keep their
+// loading-placeholder colors from drifting from the real constants.
+function injectTerminalLayoutTokens(): Plugin {
+  const replacements: Record<string, string> = {
+    __TERMINAL_HEIGHT__: String(TERMINAL_HEIGHT),
+    __TERMINAL_BLACK__: TERMINAL_BLACK,
+    __PAGE_BACKGROUND__: PAGE_BACKGROUND,
+  }
+
+  function replaceTokens(code: string): string {
+    return Object.entries(replacements).reduce(
+      (result, [token, value]) => result.replaceAll(token, value),
+      code,
+    )
+  }
+
+  return {
+    name: 'inject-terminal-layout-tokens',
+    transformIndexHtml(html) {
+      return replaceTokens(html)
+    },
+    transform(code, id) {
+      if (id.endsWith('src/styles.css')) {
+        return replaceTokens(code)
+      }
+    },
+  }
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -11,7 +47,7 @@ export default defineConfig({
   oxc: {
     target: 'esnext',
   },
-  plugins: [react()],
+  plugins: [react(), injectTerminalLayoutTokens()],
   server: {
     port: 3000,
     host: true,
