@@ -6,10 +6,8 @@ import {
   PAGE_BACKGROUND,
 } from './src/webvm/terminalLayout.ts'
 
-// index.html and styles.css can't import terminalLayout.ts (index.html runs
-// before any JS bundle; styles.css is plain CSS) - so their __TOKEN__
-// placeholders are filled in here instead, the only way to keep their
-// loading-placeholder colors from drifting from the real constants.
+// index.html and styles.css can't import terminalLayout.ts (no JS bundle
+// yet / plain CSS) - so their __TOKEN__ placeholders are filled in here.
 function injectTerminalLayoutTokens(): Plugin {
   const replacements: Record<string, string> = {
     __TERMINAL_HEIGHT__: String(TERMINAL_HEIGHT),

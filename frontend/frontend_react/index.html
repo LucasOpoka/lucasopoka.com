@@ -7,21 +7,9 @@
     <title>lucasopoka.com</title>
 
     <!--
-      Inlined so it applies before the external stylesheet loads - this page
-      is also loaded fresh inside an <iframe> on every WebVM view change
-      (see WebVmEmbed/WebVmFrame), so without this the iframe flashes the
-      browser's default white background for as long as styles.css takes to
-      fetch. The webvm-frame route splits its background into the terminal's
-      own black (matching WebVM.tsx/TerminalThemeSetter) for the terminal's
-      exact height, then the site's background below it (matching the
-      CPU/Disk footer's background once it mounts) - not solid black, or the
-      loading placeholder is taller than the terminal it's standing in for.
-      The placeholder tokens below are filled in at build time from
-      src/webvm/terminalLayout.ts (see vite.config.ts) - the one place
-      index.html can't just import - so they can't drift out of sync.
-      (Written without the token syntax here on purpose: the build-time
-      replacement runs over this whole file, so spelling a token out in
-      prose would get it replaced too.)
+      Inlined so it paints before styles.css fetches, incl. inside the
+      per-view WebVM <iframe> (see WebVmEmbed/WebVmFrame). __TOKEN__s are
+      filled in at build time from src/webvm/terminalLayout.ts (vite.config.ts).
     -->
     <style>
       body {

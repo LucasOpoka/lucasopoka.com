@@ -2,11 +2,9 @@ import '@testing-library/jest-dom/vitest'
 import { afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 
-// vitest.config's `test` block doesn't set `globals: true` (every test file
-// imports describe/it/expect explicitly instead), so @testing-library/react
-// can't auto-detect a global afterEach to hook its own DOM cleanup into -
-// without this, multiple render() calls across `it()` blocks in the same
-// file pile up in the same document instead of each starting fresh.
+// `globals: true` isn't set in vitest.config, so @testing-library/react can't
+// auto-register its own cleanup - without this, render()s across it() blocks
+// in the same file pile up in the same document.
 afterEach(cleanup)
 
 // CheerpX needs SharedArrayBuffer/WASM and network access to boot a real VM —

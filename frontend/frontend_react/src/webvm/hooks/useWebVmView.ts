@@ -8,8 +8,7 @@ const store = getDefaultStore()
 
 // Boots a fresh VM straight into the given view: waits for CheerpX and the
 // shell prompt, then cd's into the view's directory and cats its ascii art.
-// Runs once per mount - this hook lives inside the per-view iframe
-// (webvm-frame), which only ever handles a single view for its lifetime.
+// Runs once per mount - each webvm-frame iframe only ever handles one view.
 export function useWebVmView(term: Terminal | null, view: ViewName) {
   const hasExecuted = useRef(false)
 
