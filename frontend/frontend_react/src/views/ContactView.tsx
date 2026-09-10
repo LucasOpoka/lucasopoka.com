@@ -4,7 +4,7 @@ import Header from '../components/Header'
 import SiteTitle from '../components/SiteTitle'
 import AboveTerminal from '../components/AboveTerminal'
 import Footer from '../components/Footer'
-import WebVM from '../webvm/components/WebVM'
+import WebVmEmbed from '../webvm/components/WebVmEmbed'
 
 function ContactView() {
   useEffect(() => {
@@ -30,7 +30,7 @@ function ContactView() {
         out! ✉️
       </AboveTerminal>
 
-      <WebVM />
+      <WebVmEmbed view="contact" />
       <Footer />
     </Layout>
   )

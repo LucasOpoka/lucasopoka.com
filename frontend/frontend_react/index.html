@@ -6,6 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>lucasopoka.com</title>
 
+    <!--
+      Inlined so it paints before styles.css fetches, incl. inside the
+      per-view WebVM <iframe> (see WebVmEmbed/WebVmFrame). __TOKEN__s are
+      filled in at build time from src/webvm/terminalLayout.ts (vite.config.ts).
+    -->
+    <style>
+      body {
+        margin: 0;
+        background: var(--page-bg, __PAGE_BACKGROUND__);
+      }
+    </style>
+    <script>
+      if (location.pathname === '/webvm-frame') {
+        document.documentElement.style.setProperty(
+          '--page-bg',
+          'linear-gradient(to bottom, __TERMINAL_BLACK__ 0, __TERMINAL_BLACK__ __TERMINAL_HEIGHT__px, __PAGE_BACKGROUND__ __TERMINAL_HEIGHT__px, __PAGE_BACKGROUND__ 100%)',
+        )
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

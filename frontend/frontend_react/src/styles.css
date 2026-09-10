@@ -1,3 +1,7 @@
 body {
-  background-color: #121212;
+  margin: 0;
+  /* --page-bg (set in index.html) overrides this with a gradient on the
+     webvm-frame route; the token fallback keeps this in sync with
+     PAGE_BACKGROUND in terminalLayout.ts elsewhere. */
+  background: var(--page-bg, __PAGE_BACKGROUND__);
 }

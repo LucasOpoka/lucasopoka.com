@@ -3,7 +3,7 @@ import Layout from '../components/Layout'
 import Header from '../components/Header'
 import SiteTitle from '../components/SiteTitle'
 import AboveTerminal from '../components/AboveTerminal'
-import WebVM from '../webvm/components/WebVM'
+import WebVmEmbed from '../webvm/components/WebVmEmbed'
 import Footer from '../components/Footer'
 
 function PongView() {
@@ -32,7 +32,7 @@ function PongView() {
         entertainment.
       </AboveTerminal>
 
-      <WebVM />
+      <WebVmEmbed view="pong" />
       <Footer />
     </Layout>
   )
