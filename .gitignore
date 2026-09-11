@@ -47,6 +47,9 @@ playwright-report/
 test-results/
 blob-report/
 
+# scripts/screenshot.mjs output
+frontend/frontend_react/scripts/.output/
+
 # ESLint cache
 .eslintcache
 

@@ -4,20 +4,27 @@ import { Box } from '@mui/material'
 import '@xterm/xterm/css/xterm.css'
 import { blockCacheAtom } from '../WebVmAtoms'
 import WebVmFooter from './WebVmFooter'
-import { useViewNavigation } from '../hooks/useViewNavigation'
+import { useWebVmView } from '../hooks/useWebVmView'
 import { initTerminal } from './WebVmInitTerminal.tsx'
 import { initCheerpX } from './WebVmInitCheerpX.ts'
 import { getDefaultStore } from 'jotai'
+import type { ViewName } from '../viewConfigs'
+import {
+  TERMINAL_WIDTH,
+  TERMINAL_HEIGHT,
+  TERMINAL_BLACK,
+} from '../terminalLayout'
 
-export const TERMINAL_WIDTH = 800
-export const TERMINAL_HEIGHT = 427
+interface WebVMProps {
+  view: ViewName
+}
 
-export default function WebVM() {
+export default function WebVM({ view }: WebVMProps) {
   // Create terminal instance
   const { instance: term, ref: termRef } = useXTerm()
 
-  // Use the view navigation hook - only when CheerpX is ready
-  useViewNavigation(term)
+  // Boot straight into the requested view once CheerpX is ready
+  useWebVmView(term, view)
 
   // Initialize terminal and virtual machine
   useEffect(() => {
@@ -36,26 +43,18 @@ export default function WebVM() {
     location.reload()
   }
 
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (term) {
-        term.dispose()
-      }
-    }
-  }, [])
-
   return (
     <Box>
       <Box
         ref={termRef}
         sx={{
-          mt: 2,
           height: `${TERMINAL_HEIGHT}px`,
           width: `${TERMINAL_WIDTH}px`,
-          border: '1px solid #87ff8755',
-          boxShadow: '0 0 200px #87ff8734',
-          backgroundColor: 'black',
+          backgroundColor: TERMINAL_BLACK,
+          // Invisible - shrinks xterm's content area by 1px/side (border-box),
+          // matching the pre-iframe layout where the real border (now in
+          // WebVmEmbed) lived directly on this box.
+          border: '1px solid transparent',
           // Hide Xterm terminal scrollbar
           '& .xterm-viewport': {
             '&::-webkit-scrollbar': {

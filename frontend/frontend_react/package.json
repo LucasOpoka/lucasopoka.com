@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
+    "screenshot": "node scripts/screenshot.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview"
