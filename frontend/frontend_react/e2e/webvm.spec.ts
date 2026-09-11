@@ -12,7 +12,11 @@ import { test, expect } from '@playwright/test'
 test('the WebVM boots and runs a real command', async ({ page }) => {
   await page.goto('/')
 
-  const terminal = page.locator('.xterm-screen')
+  // The terminal lives inside the per-view WebVM <iframe> (see WebVmEmbed/WebVmFrame),
+  // not directly on the page.
+  const terminal = page
+    .frameLocator('iframe[title="WebVM - home"]')
+    .locator('.xterm-screen')
   await expect(terminal).toBeVisible()
 
   // The home view runs `cd ... && cat home` on load, which prints this ASCII-art caption once

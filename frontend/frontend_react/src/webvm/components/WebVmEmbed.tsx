@@ -18,9 +18,9 @@ interface WebVmEmbedProps {
 export default function WebVmEmbed({ view }: WebVmEmbedProps) {
   return (
     <Box sx={{ position: 'relative', mt: 2, width: `${TERMINAL_WIDTH}px` }}>
-      {/* Border/glow drawn in the parent doc, not the iframe, since an
-        iframe always clips content to its border box. Sized to just the
-        terminal, matching the pre-iframe layout. */}
+      {/* Border/glow drawn in the parent doc since an iframe clips its own
+        content. Matches prod's non-iframe terminal exactly, glow bleeding
+        onto the footer below included - that's how it looks there too. */}
       <Box
         aria-hidden
         sx={{
