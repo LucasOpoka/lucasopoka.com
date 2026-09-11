@@ -24,10 +24,9 @@ vi.mock('@leaningtech/cheerpx', () => ({
   DataDevice: { create: vi.fn().mockResolvedValue({}) },
 }))
 
-// react-xtermjs mounts real xterm.js onto a canvas, which jsdom doesn't
-// implement. Returning a null terminal instance is enough: WebVM's own
-// effects (initTerminal/initCheerpX/useWebVmView) all already guard on
-// `if (!term) return`, so mounting stays a true no-op rather than a fake VM.
+// react-xtermjs mounts real xterm.js onto a canvas, which jsdom lacks. A null
+// terminal instance is enough: WebVM's effects all guard on `if (!term) return`,
+// so mounting stays a true no-op rather than a fake VM.
 vi.mock('react-xtermjs', () => ({
   useXTerm: () => ({ instance: null, ref: { current: null } }),
 }))
