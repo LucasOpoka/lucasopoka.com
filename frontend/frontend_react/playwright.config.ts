@@ -1,9 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
-// Runs against a real built-and-running container (see .github/workflows/ci.yml's e2e job and
-// ../../deploy/e2e-compose.yml), never against `npm run dev` — the bug that motivated adding
-// these tests (the WebVM's disk image missing from the production build) only ever showed up in
-// the real Docker image, not the dev server.
+// Runs against a real built-and-running container (see ci.yml's e2e job and
+// deploy/e2e-compose.yml), never `npm run dev` - the bug that motivated these
+// tests (prod's disk image missing) only showed up in the real image.
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,

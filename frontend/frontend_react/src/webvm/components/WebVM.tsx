@@ -51,6 +51,10 @@ export default function WebVM({ view }: WebVMProps) {
           height: `${TERMINAL_HEIGHT}px`,
           width: `${TERMINAL_WIDTH}px`,
           backgroundColor: TERMINAL_BLACK,
+          // Invisible - shrinks xterm's content area by 1px/side (border-box),
+          // matching the pre-iframe layout where the real border (now in
+          // WebVmEmbed) lived directly on this box.
+          border: '1px solid transparent',
           // Hide Xterm terminal scrollbar
           '& .xterm-viewport': {
             '&::-webkit-scrollbar': {
