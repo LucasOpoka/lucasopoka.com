@@ -6,6 +6,11 @@ function Photo() {
       sx={{
         width: 128,
         height: 128,
+        // Above the terminal's decorative glow overlay (WebVmEmbed), which is
+        // position:absolute and would otherwise paint over this non-positioned
+        // avatar despite appearing later in the page.
+        position: 'relative',
+        zIndex: 1,
       }}
       src="https://avatars.githubusercontent.com/u/83923012?v=4"
       alt="It's a me, Lucas!"
