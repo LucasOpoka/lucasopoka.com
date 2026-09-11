@@ -12,10 +12,10 @@ function WebVmFrame() {
   const view = isViewName(requestedView) ? requestedView : DEFAULT_VIEW
 
   return (
-    // No background (index.html/styles.css paint it) and no minHeight:
-    // 100vh - sized to natural content height so an oversized footer clips
-    // visibly instead of silently pushing the outer page's Footer down.
-    <Box>
+    // No background (index.html/styles.css paint it). height: 100vh here
+    // equals the iframe's own fixed height exactly, so this Box always
+    // fills it precisely - no sub-pixel gap for the background split to miss.
+    <Box sx={{ height: '100vh' }}>
       <WebVM view={view} />
     </Box>
   )
